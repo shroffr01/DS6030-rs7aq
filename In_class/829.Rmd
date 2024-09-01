@@ -1,0 +1,79 @@
+---
+title: '829'
+output: html_document
+date: "2024-08-29"
+---
+
+```{r}
+library(nycflights13)
+library(tidyverse)
+```
+
+
+```{r}
+data("flights")
+```
+
+
+```{r}
+flights %>% 
+  filter(
+    distance < 1000
+  ) %>%
+  select(
+    dep_delay, arr_delay, origin, dest, air_time, distance
+  ) %>%
+  mutate(
+    dep_delay_z = (dep_delay - mean(dep_delay, na.rm = TRUE))/sd(dep_delay, na.rm = TRUE)
+  ) %>%
+  mutate(
+    #dep_delay_hr = dep_delay/60,
+    #arr_delay_hr = arr_delay/60,
+    across(ends_wth("delay"), \(x) x/60)
+  )
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
