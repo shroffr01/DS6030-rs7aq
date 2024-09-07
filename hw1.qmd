@@ -96,7 +96,7 @@ deg3_model = lm(y~poly(x, degree=3), data=data_train)
 ```
 
 ```{r}
-geom_line(deg1_model.Coefficients)
+deg1_model$coefficients
 ```
 
 ```{r}
@@ -135,7 +135,7 @@ if(deg==0) m = lm(y~1, data=data_train) # intercept only model
 else m = lm(y~poly(x, degree=deg), data=data_train) # polynomial
 p = length(coef(m)) # number of parameters
 #: calculate training MSE
-mse_train = mean(m$residualsˆ2) # training MSE
+mse_train = mean(m$residuals^2) # training MSE
 #: calculate test MSE
 yhat = predict(m, data_test) # predictions at test X's
 mse_test = mean( (data_test$y - yhat)^2 )# test MSE
@@ -145,18 +145,16 @@ tibble(degree=deg, edf=p, mse_train, mse_test)
 ```
 
 ```{r}
-print('hi')
+poly_eval(deg=1, data_train, data_test)
+poly_eval(deg=2, data_train, data_test)
+poly_eval(deg=3, data_train, data_test)
 
 ```
+
+The results are not as expected. The lowest MSE on the test data occurs when the degree = 1, not 2. This suggests that we are dealing with a linear model not a quadratic one.
 
 ```{r}
-print('hi')
-#poly_eval(deg = 1, data_train, data_test)
-#poly_eval(deg = 2, data_train, data_test)
-#poly_eval(deg = 3, data_train, data_test)
-```
-
-```{}
+data_test
 ```
 :::
 
@@ -165,7 +163,41 @@ print('hi')
 What is the best achievable MSE? That is, what is the MSE if the true $f(x)$ was used to evaluate the test set? How close does the best method come to achieving the optimum?
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+
+```
+
+```{r}
+# need to generate yhat values based on function
+#yhat = predict(m, data_test) # predictions at test X's
+#mse_test = mean( (data_test$y - yhat)^2 )# test MSE
+
+# function that generates yhat values using true function
+gen_yhat <- function(data_test) {
+  
+yhat_list <- vector()
+
+for (i in 1:nrow(data_test)){
+  
+  yhat <- -1 + .5*data_test$x[i] + .2*(data_test$x[i]^2)
+  
+  yhat_list[i] <- yhat
+}
+
+yhat_list
+}
+
+yhat_list <- gen_yhat(data_test)
+
+# get the test MSE
+mse_test <- mean((data_test$y - yhat_list)^2)
+```
+
+```{r}
+mse_test
+```
+
+This method predictably results in a lower MSE value. The best method out of the 3 models fitted to the data, the linear model, has a test MSE of 9.17. Therefore, a difference in MSE of .30.
 :::
 
 ## f. Replication
@@ -180,7 +212,60 @@ The MSE scores obtained in part *d* came from one realization of training data. 
 -   Create kernel density or histogram plots of the resulting MSE values for each model.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+set.seed(613)
+
+MSE_deg1 <- vector()
+MSE_deg2 <- vector()
+MSE_deg3 <- vector()
+
+for (i in 1:100){
+  
+  n <-  100
+  sd <-  3
+
+  x <- sim_x(n)
+  y <- sim_y(x, sd = sd)
+
+  data_train <- tibble(x,y)
+  
+  deg1_model = lm(y~poly(x, degree=1), data=data_train)
+  deg2_model = lm(y~poly(x, degree=2), data=data_train)
+  deg3_model = lm(y~poly(x, degree=3), data=data_train)
+  
+  # caculate test MSE
+  
+  yhat_1 = predict(deg1_model, data_test) # predictions at test X's
+  mse_test_deg1 = mean( (data_test$y - yhat_1)^2 )# test MSE
+  
+  yhat_2 = predict(deg2_model, data_test) # predictions at test X's
+  mse_test_deg2 = mean( (data_test$y - yhat_2)^2 )# test MSE
+
+  yhat_3 = predict(deg3_model, data_test) # predictions at test X's
+  mse_test_deg3 = mean( (data_test$y - yhat_3)^2 )# test MSE
+
+  MSE_deg1[i] <- mse_test_deg1
+  MSE_deg2[i] <- mse_test_deg2
+  MSE_deg3[i] <- mse_test_deg3
+}
+
+```
+
+```{r}
+degree <- c(rep(1, length(MSE_deg1)),rep(2, length(MSE_deg2)),rep(3, length(MSE_deg3)))
+                
+MSE <- c(MSE_deg1, MSE_deg2, MSE_deg3)
+kd_df <- data.frame(degree, MSE)
+kd_df$degree <- as.factor(kd_df$degree)
+
+```
+
+```{r}
+ggplot(kd_df, aes(x=MSE, fill=degree)) +
+  geom_density(alpha=0.3) +
+  scale_x_continuous(breaks=seq(7,11, by=.5), limits = c(8.5, 11)) +
+  scale_y_continuous(breaks=seq(0,50,by=2))
+```
 :::
 
 ## g. Best model
@@ -188,6 +273,67 @@ Add solution here
 Show a count of how many times each model was the best. That is, out of the 100 simulations, count how many times each model had the lowest MSE.
 
 ::: {.callout-note title="Solution"}
+```{r}
+set.seed(613)
+
+count_best_model1 <- 0
+count_best_model2 <- 0
+count_best_model3 <- 0
+
+MSE_deg1 <- vector()
+MSE_deg2 <- vector()
+MSE_deg3 <- vector()
+
+for (i in 1:100){
+  
+  n <-  100
+  sd <-  3
+
+  x <- sim_x(n)
+  y <- sim_y(x, sd = sd)
+
+  data_train <- tibble(x,y)
+  
+  deg1_model = lm(y~poly(x, degree=1), data=data_train)
+  deg2_model = lm(y~poly(x, degree=2), data=data_train)
+  deg3_model = lm(y~poly(x, degree=3), data=data_train)
+  
+  # caculate test MSE
+  
+  yhat_1 = predict(deg1_model, data_test) # predictions at test X's
+  mse_test_deg1 = mean( (data_test$y - yhat_1)^2 )# test MSE
+  
+  yhat_2 = predict(deg2_model, data_test) # predictions at test X's
+  mse_test_deg2 = mean( (data_test$y - yhat_2)^2 )# test MSE
+
+  yhat_3 = predict(deg3_model, data_test) # predictions at test X's
+  mse_test_deg3 = mean( (data_test$y - yhat_3)^2 )# test MSE
+  
+  if (count_best_model1 < count_best_model2 & count_best_model1 < count_best_model2){
+    count_best_model1 <- count_best_model1 + 1
+  }
+  
+  else if (count_best_model2 < count_best_model1 & count_best_model2 < count_best_model3){
+    count_best_model2 <- count_best_model2 + 1
+  }
+  else if (count_best_model3 < count_best_model1 & count_best_model3 < count_best_model2){
+    count_best_model3 <- count_best_model3 + 1
+  }
+
+  MSE_deg1[i] <- mse_test_deg1
+  MSE_deg2[i] <- mse_test_deg2
+  MSE_deg3[i] <- mse_test_deg3
+  
+}
+```
+
+```{r}
+
+```
+
+```{}
+```
+
 Add solution here
 :::
 
