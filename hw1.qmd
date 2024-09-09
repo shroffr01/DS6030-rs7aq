@@ -36,7 +36,7 @@ Y &= -1 + .5X + .2X^2 + \epsilon \\
 ```{r}
 # generates random x values
 sim_x <- function(n) {
-  runif(n)
+  rnorm(n)
 }
 
 # defines function y
@@ -73,8 +73,8 @@ data_train <- tibble(x,y)
 
 ```{r}
 ggplot(data_train, aes(x,y)) + geom_point() + 
-  geom_function(fun = f) +
-  scale_x_continuous(breaks=seq(0,1, by=.10)) +
+  geom_function(fun = f, color = 'red') +
+  scale_x_continuous(breaks=seq(-2,2, by=0.5)) +
   scale_y_continuous(breaks=seq(-50,50,by=2))
 
 
@@ -96,14 +96,11 @@ deg3_model = lm(y~poly(x, degree=3), data=data_train)
 ```
 
 ```{r}
-deg1_model$coefficients
-```
-
-```{r}
-ggplot(data_train, aes(x,y)) + geom_point() + 
-  geom_function(fun = f) +
-  scale_x_continuous(breaks=seq(0,1, by=.1)) +
-  scale_y_continuous(breaks=seq(-50,50,by=2))
+ggplot(data_train, aes(x,y)) + geom_point(size=2, alpha=0.7) + 
+  geom_function(fun = f, color = 'black', size = 1) +
+  stat_smooth(method = "lm", formula = y ~ poly(x, 1), aes(color = "Degree 1"), se = FALSE) + stat_smooth(method = "lm", formula = y ~ poly(x, 2), aes(color = "Degree 2"), se = FALSE) + stat_smooth(method = "lm", formula = y ~ poly(x, 3), aes(color = "Degree 3"), se = FALSE) +
+  scale_x_continuous(breaks=seq(-3,3, by=.5)) +
+  scale_y_continuous(breaks=seq(-50,50,by=2))  
 
 ```
 :::
@@ -151,11 +148,7 @@ poly_eval(deg=3, data_train, data_test)
 
 ```
 
-The results are not as expected. The lowest MSE on the test data occurs when the degree = 1, not 2. This suggests that we are dealing with a linear model not a quadratic one.
-
-```{r}
-data_test
-```
+The results are not as expected. The lowest MSE on the test data occurs when the degree = 1, not 2. This may suggest that we are dealing with a linear model not a quadratic one.
 :::
 
 ## e. Optimal performance
@@ -164,13 +157,6 @@ What is the best achievable MSE? That is, what is the MSE if the true $f(x)$ was
 
 ::: {.callout-note title="Solution"}
 ```{r}
-
-```
-
-```{r}
-# need to generate yhat values based on function
-#yhat = predict(m, data_test) # predictions at test X's
-#mse_test = mean( (data_test$y - yhat)^2 )# test MSE
 
 # function that generates yhat values using true function
 gen_yhat <- function(data_test) {
@@ -197,7 +183,7 @@ mse_test <- mean((data_test$y - yhat_list)^2)
 mse_test
 ```
 
-This method predictably results in a lower MSE value. The best method out of the 3 models fitted to the data, the linear model, has a test MSE of 9.17. Therefore, a difference in MSE of .30.
+This method predictably results in a lower MSE value. The best method out of the 3 models fitted to the data, the linear model, has a test MSE of 9.29. Therefore, a difference in MSE of .32.
 :::
 
 ## f. Replication
@@ -309,14 +295,14 @@ for (i in 1:100){
   yhat_3 = predict(deg3_model, data_test) # predictions at test X's
   mse_test_deg3 = mean( (data_test$y - yhat_3)^2 )# test MSE
   
-  if (count_best_model1 < count_best_model2 & count_best_model1 < count_best_model2){
+  if (mse_test_deg1 < mse_test_deg2 & mse_test_deg1 < mse_test_deg3){
     count_best_model1 <- count_best_model1 + 1
   }
   
-  else if (count_best_model2 < count_best_model1 & count_best_model2 < count_best_model3){
+  else if (mse_test_deg2 < mse_test_deg1 & mse_test_deg2 < mse_test_deg3){
     count_best_model2 <- count_best_model2 + 1
   }
-  else if (count_best_model3 < count_best_model1 & count_best_model3 < count_best_model2){
+  else if (mse_test_deg3 < mse_test_deg1 & mse_test_deg3 < mse_test_deg2){
     count_best_model3 <- count_best_model3 + 1
   }
 
@@ -328,13 +314,11 @@ for (i in 1:100){
 ```
 
 ```{r}
-
+model_degree <- c(1, 2, 3)
+frequency_best_model <- c(count_best_model1, count_best_model2, count_best_model3)
+model_compare_df <- data.frame(model_degree, frequency_best_model)
+model_compare_df
 ```
-
-```{}
-```
-
-Add solution here
 :::
 
 ## h. Function to implement simulation
@@ -342,7 +326,69 @@ Add solution here
 Write a function that implements the simulation in part *f*. The function should have arguments for i) the size of the training data $n$, ii) the standard deviation of the random error $\sigma$, and iii) the test data. Use the same `set.seed(613)`.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+
+set.seed(613)
+
+f_function <- function(n, sd, data_test) {
+  
+  count_best_model1 <- 0
+  count_best_model2 <- 0
+  count_best_model3 <- 0
+
+  MSE_deg1 <- vector()
+  MSE_deg2 <- vector()
+  MSE_deg3 <- vector()
+
+  for (i in 1:100){
+    
+    n <-  n
+    sd <-  sd
+  
+    x <- sim_x(n)
+    y <- sim_y(x, sd = sd)
+  
+    data_train <- tibble(x,y)
+    
+    deg1_model = lm(y~poly(x, degree=1), data=data_train)
+    deg2_model = lm(y~poly(x, degree=2), data=data_train)
+    deg3_model = lm(y~poly(x, degree=3), data=data_train)
+    
+    # caculate test MSE
+    
+    yhat_1 = predict(deg1_model, data_test) # predictions at test X's
+    mse_test_deg1 = mean( (data_test$y - yhat_1)^2 )# test MSE
+    
+    yhat_2 = predict(deg2_model, data_test) # predictions at test X's
+    mse_test_deg2 = mean( (data_test$y - yhat_2)^2 )# test MSE
+  
+    yhat_3 = predict(deg3_model, data_test) # predictions at test X's
+    mse_test_deg3 = mean( (data_test$y - yhat_3)^2 )# test MSE
+    
+    if (mse_test_deg1 < mse_test_deg2 & mse_test_deg1 < mse_test_deg3){
+    count_best_model1 <- count_best_model1 + 1
+  }
+  
+    else if (mse_test_deg2 < mse_test_deg1 & mse_test_deg2 < mse_test_deg3){
+    count_best_model2 <- count_best_model2 + 1
+  }
+    else if (mse_test_deg3 < mse_test_deg1 & mse_test_deg3 < mse_test_deg2){
+    count_best_model3 <- count_best_model3 + 1
+  }
+  
+    MSE_deg1[i] <- mse_test_deg1
+    MSE_deg2[i] <- mse_test_deg2
+    MSE_deg3[i] <- mse_test_deg3
+  }
+
+  model_degree <- c(1, 2, 3)
+  frequency_best_model <- c(count_best_model1, count_best_model2, count_best_model3)
+  model_compare_df <- data.frame(model_degree, frequency_best_model)
+  model_compare_df
+}
+
+
+```
 :::
 
 ## i. Performance when $\sigma=2$
@@ -351,9 +397,17 @@ Use your function to repeat the simulation in part *f*, but use $\sigma=2$. Repo
 
 -   Be sure to generate new test data with ($n = 10000$, $\sigma = 2$, using `seed = 612`).
 
-::: {.callout-note title="Solution"}
-Add solution here
-:::
+```{r}
+set.seed(612)
+n_test <- 10000
+
+x_test <- sim_x(n_test)
+y_test <- sim_y(x_test, sd=sd)
+data_test_new <- tibble(x=x_test, y=y_test)
+
+
+f_function(10000, 2, data_test_new)
+```
 
 ## j. Performance when $\sigma=4$ and $n=300$
 
@@ -362,7 +416,17 @@ Repeat *i*, but now use $\sigma=4$ and $n=300$.
 -   Be sure to generate new test data with ($n = 10000$, $\sigma = 4$, using `seed = 612`).
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+set.seed(612)
+n_test <- 300
+
+x_test <- sim_x(n_test)
+y_test <- sim_y(x_test, sd=sd)
+data_test_new1 <- tibble(x=x_test, y=y_test)
+
+
+f_function(300, 4, data_test_new)
+```
 :::
 
 ## k. Understanding
@@ -370,5 +434,5 @@ Add solution here
 Describe the effects $\sigma$ and $n$ has on selection of the best model? Why is the *true* model form (i.e., quadratic) not always the *best* model to use when prediction is the goal?
 
 ::: {.callout-note title="Solution"}
-Add solution here
+As standard deviation increases, there is more variability in which model is the best. As n increases, there is less variability since there is more data. The true model form (quadratic) is not always the best model to use when prediction is the goal because it might be overfit to the data.
 :::
