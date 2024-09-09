@@ -41,7 +41,7 @@ sim_x <- function(n) {
 
 # defines function y
 f <- function(x) {
-  -1 + .5*x + .2*(x^2)
+  -1 + .5*x + .2*(x**2)
 }
 
 # generates y values based on x
@@ -148,7 +148,7 @@ poly_eval(deg=3, data_train, data_test)
 
 ```
 
-The results are not as expected. The lowest MSE on the test data occurs when the degree = 1, not 2. This may suggest that we are dealing with a linear model not a quadratic one.
+The results are as expected. The lowest MSE on the test data occurs when the degree = 2, not 1 or 3.
 :::
 
 ## e. Optimal performance
@@ -436,3 +436,10 @@ Describe the effects $\sigma$ and $n$ has on selection of the best model? Why is
 ::: {.callout-note title="Solution"}
 As standard deviation increases, there is more variability in which model is the best. As n increases, there is less variability since there is more data. The true model form (quadratic) is not always the best model to use when prediction is the goal because it might be overfit to the data.
 :::
+
+```{r}
+library(tidyverse)
+Startups <- read.csv('Startups.csv')
+
+ggplot(Startups, aes(x=R.D.Spend, y=Profit)) + geom_point() +geom_smooth(method='lm')
+```
