@@ -328,10 +328,10 @@ Write a function that implements the simulation in part *f*. The function should
 ::: {.callout-note title="Solution"}
 ```{r}
 
-set.seed(613)
-
 f_function <- function(n, sd, data_test) {
   
+  set.seed(613)
+
   count_best_model1 <- 0
   count_best_model2 <- 0
   count_best_model3 <- 0
@@ -344,7 +344,7 @@ f_function <- function(n, sd, data_test) {
     
     n <-  n
     sd <-  sd
-  
+
     x <- sim_x(n)
     y <- sim_y(x, sd = sd)
   
@@ -401,12 +401,13 @@ Use your function to repeat the simulation in part *f*, but use $\sigma=2$. Repo
 set.seed(612)
 n_test <- 10000
 
+sd <- 2
 x_test <- sim_x(n_test)
 y_test <- sim_y(x_test, sd=sd)
 data_test_new <- tibble(x=x_test, y=y_test)
 
 
-f_function(10000, 2, data_test_new)
+f_function(100, 2, data_test_new)
 ```
 
 ## j. Performance when $\sigma=4$ and $n=300$
@@ -418,14 +419,15 @@ Repeat *i*, but now use $\sigma=4$ and $n=300$.
 ::: {.callout-note title="Solution"}
 ```{r}
 set.seed(612)
-n_test <- 300
+n_test <- 10000
 
+sd <- 4
 x_test <- sim_x(n_test)
 y_test <- sim_y(x_test, sd=sd)
 data_test_new1 <- tibble(x=x_test, y=y_test)
 
 
-f_function(300, 4, data_test_new)
+f_function(300, 4, data_test_new1)
 ```
 :::
 
@@ -434,12 +436,5 @@ f_function(300, 4, data_test_new)
 Describe the effects $\sigma$ and $n$ has on selection of the best model? Why is the *true* model form (i.e., quadratic) not always the *best* model to use when prediction is the goal?
 
 ::: {.callout-note title="Solution"}
-As standard deviation increases, there is more variability in which model is the best. As n increases, there is less variability since there is more data. The true model form (quadratic) is not always the best model to use when prediction is the goal because it might be overfit to the data.
+As standard deviation increases, there is more variability in which model is the best. As n increases, there is less variability since there is more data. The true model form (quadratic) is not always the best model to use when prediction is the goal because it might overfit the data.
 :::
-
-```{r}
-library(tidyverse)
-Startups <- read.csv('Startups.csv')
-
-ggplot(Startups, aes(x=R.D.Spend, y=Profit)) + geom_point() +geom_smooth(method='lm')
-```
