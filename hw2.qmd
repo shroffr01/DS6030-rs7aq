@@ -127,6 +127,25 @@ YHAT[,m] = predict(m_boot, data_eval)
 ```
 
 ```{r}
+data_fitted <- as_tibble(YHAT) %>% # convert matrix to tibble
+bind_cols(data_eval) %>% # add the eval points
+pivot_longer(-x, names_to="simulation", values_to="y") # convert to long format
+
+
+ggplot(data_train, aes(x,y)) +
+geom_line(data=data_fitted, color="red", alpha=.10, aes(group=simulation)) +
+geom_point()
+```
+:::
+
+## e. Confidence Intervals
+
+Calculate the pointwise 95% confidence intervals from the bootstrap samples. That is, for each $x \in {\rm eval\_pts}$, calculate the upper and lower limits such that only 5% of the curves fall outside the interval at $x$.
+
+-   Remake the plot from part *c*, but add the upper and lower boundaries from the 95% confidence intervals.
+
+::: {.callout-note title="Solution"}
+```{r}
 data_org <- data_eval %>%
   mutate(
     lower=apply(YHAT,1,quantile,probs=0.05),
@@ -141,21 +160,9 @@ pivot_longer(-x, names_to="simulation", values_to="y") # convert to long format
 
 
 ggplot(data_train, aes(x,y)) +
-geom_line(data=data_fitted, color="red", alpha=.10, aes(group=simulation)) +
-  geom_ribbon(aes(ymin=lower, ymax=upper), data=data_fitted,fill='blue',alpha=0.5)+
+geom_line(data=data_fitted, color="black", alpha=.10, aes(group=simulation)) +
+  geom_ribbon(aes(ymin=lower, ymax=upper), data=data_org,fill='red',alpha=0.4)+
 geom_point()
-```
-:::
-
-## e. Confidence Intervals
-
-Calculate the pointwise 95% confidence intervals from the bootstrap samples. That is, for each $x \in {\rm eval\_pts}$, calculate the upper and lower limits such that only 5% of the curves fall outside the interval at $x$.
-
--   Remake the plot from part *c*, but add the upper and lower boundaries from the 95% confidence intervals.
-
-::: {.callout-note title="Solution"}
-```{r}
-
 ```
 :::
 
@@ -176,7 +183,88 @@ Use $10$-fold cross-validation to find the value of $k$ (i.e., neighborhood size
 -   Notation: The $k$ is the tuning paramter for the kNN model. The $v=10$ is the number of folds in V-fold cross-validation. Don't get yourself confused.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+library(FNN)
+
+knn_eval <- function(k, data_train, data_test){
+# fit model and eval on training data
+knn = knn.reg(data_train[,'x', drop=FALSE],
+y = data_train$y,
+test = data_train[,'x', drop=FALSE],
+k = k)
+r = data_train$y-knn$pred # residuals on training data
+mse_train = mean(r^2) # training MSE
+# fit model and eval on test data
+knn.test = knn.reg(data_train[,'x', drop=FALSE],
+y = data_train$y,
+test = data_test[,'x', drop=FALSE],
+k = k)
+r_test = data_test$y - knn.test$pred # residuals on test data
+mse_test = mean(r_test^2) # test MSE
+# results
+edf = nrow(data_train)/k # effective dof (edof)
+output <- tibble(k = k, edf = edf, mse_train, mse_test)
+}
+```
+
+```{r}
+data_train
+```
+
+```{r}
+set.seed(221)
+
+folds <- 10
+fold <-  sample(rep(1:folds, length=nrow(data_train))) 
+
+k_MSE_vals <- vector()
+edf_vals_m <- vector()
+
+for (k in 1:38){
+
+  k <- k+2
+  MSE_vals <- vector()
+  edf_vals <- vector()
+
+  for(j in 1:folds){
+    
+    #-- Set training/val data
+    val = which(fold == j) # indices of holdout/validation data
+    train = which(fold != j) # indices of fitting/training data
+    n.val = length(val) # number of observations in validation
+    
+    #- fit and evaluate models
+    data_fit = slice(data_train, train)
+    data_eval = slice(data_train, val)
+    
+    output <- knn_eval(k, data_fit, data_eval)
+    MSE_vals[j] <- output['mse_test']
+    edf_vals[i] <- output['edf']
+  
+  }
+
+  MSE_vals <- unlist(MSE_vals)
+  mean_MSE <- mean(MSE_vals)
+  
+  edf_vals <- unlist(edf_vals)
+  mean_edf <- mean(edf_vals)
+  
+  k <- k-2
+  
+  k_MSE_vals[k] <- mean_MSE
+  edf_vals_m[k] <- mean_edf
+}
+```
+
+```{r}
+k_seq <- seq(3,40,1)
+
+data_df <- tibble(k_seq, k_MSE_vals)
+
+ggplot(data=data_df, aes(x=k_seq,y=k_MSE_vals)) + 
+  geom_line(color='blue', linewidth=2)
+
+```
 :::
 
 ## b. Find the optimal *edf*
@@ -184,6 +272,15 @@ Add solution here
 The $k$ (number of neighbors) in a kNN model determines the effective degrees of freedom *edf*. What is the optimal *edf*? Be sure to use the correct sample size when making this calculation. Produce a plot similar to that from part *a*, but use *edf* (effective degrees of freedom) on the x-axis.
 
 ::: {.callout-note title="Solution"}
+```{r}
+k_seq <- seq(3,40,1)
+
+data_df_edf <- tibble(edf_vals_m, k_MSE_vals)
+
+ggplot(data=data_df, aes(x=edf_vals_m,y=k_MSE_vals)) + 
+  geom_line(color='blue', linewidth=2)
+```
+
 Add solution here
 :::
 
@@ -192,7 +289,7 @@ Add solution here
 After running cross-validation, a final model fit from *all* of the training data needs to be produced to make predictions. What value of $k$ would you choose? Why?
 
 ::: {.callout-note title="Solution"}
-Add solution here
+I would choose 9 as my k for the KNN model, because this is where the lowest test MSE begins and also when the model is simpler compared to k = 10, or 11.
 :::
 
 ## d. Evaluate actual performance
@@ -203,6 +300,34 @@ Now we will see how well cross-validation performed. Simulate a test data set of
 -   Report the optimal $k$, the corresponding *edf*, and MSE based on the test set.
 
 ::: {.callout-note title="Solution"}
+```{r}
+n_test <- 50000
+set.seed(223)
+
+x_test <- sim_x(n_test)
+y_test <- sim_y(x_test)
+data_test <- tibble(x=x_test, y=y_test)
+
+MSE_knn <- vector()
+
+for (k in 1:38){
+  k <- k+2
+  output <- knn_eval(k, data_train, data_test)
+    
+  k <- k-2
+  MSE_knn[k] <- output['mse_test']
+}
+```
+
+```{r}
+MSE_knn <- unlist(MSE_knn)
+best_k <- which.min(MSE_knn) + 2
+edf <- nrow(data_train)/best_k
+print(paste('Best performing k is', best_k))
+print(paste('MSE value for k= 13', MSE_knn[11]))
+print(paste('EDF value for k= 13', edf))
+```
+
 Add solution here
 :::
 
