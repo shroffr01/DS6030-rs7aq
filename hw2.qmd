@@ -127,11 +127,22 @@ YHAT[,m] = predict(m_boot, data_eval)
 ```
 
 ```{r}
-data_fitted = as_tibble(YHAT) %>% # convert matrix to tibble
+data_org <- data_eval %>%
+  mutate(
+    lower=apply(YHAT,1,quantile,probs=0.05),
+    upper=apply(YHAT,1,quantile,probs=0.95)
+  )
+```
+
+```{r}
+data_fitted <- as_tibble(YHAT) %>% # convert matrix to tibble
 bind_cols(data_eval) %>% # add the eval points
 pivot_longer(-x, names_to="simulation", values_to="y") # convert to long format
+
+
 ggplot(data_train, aes(x,y)) +
 geom_line(data=data_fitted, color="red", alpha=.10, aes(group=simulation)) +
+  geom_ribbon(aes(ymin=lower, ymax=upper), data=data_fitted,fill='blue',alpha=0.5)+
 geom_point()
 ```
 :::
