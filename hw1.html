@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Rohan Shroff">
-<meta name="dcterms.date" content="2024-09-09">
+<meta name="dcterms.date" content="2024-09-10">
 
 <title>Homework #1: Supervised Learning</title>
 <style>
@@ -3266,7 +3266,7 @@ DS 6030 | Fall 2024 | University of Virginia
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 9, 2024</p>
+      <p class="date">September 10, 2024</p>
     </div>
   </div>
   
@@ -3436,54 +3436,39 @@ Solution
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>data_test <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x=</span>x_test, <span class="at">y=</span>y_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>data_test</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 10,000 × 2
-       x     y
-   &lt;dbl&gt; &lt;dbl&gt;
-1  0.390 -1.49
-2 -0.603  2.34
-3 -0.985  1.09
-4 -0.159  3.39
-5  1.71  -1.86
-6 -1.16   1.16
-# ℹ 9,994 more rows</code></pre>
-</div>
-</div>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#: Function to fit, predict, and evaluate a polynomial regression model</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>poly_eval <span class="ot">&lt;-</span> <span class="cf">function</span>(deg, data_train, data_test){</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(deg<span class="sc">==</span><span class="dv">0</span>) m <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="dv">1</span>, <span class="at">data=</span>data_train) <span class="co"># intercept only model</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span> m <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span>deg), <span class="at">data=</span>data_train) <span class="co"># polynomial</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>p <span class="ot">=</span> <span class="fu">length</span>(<span class="fu">coef</span>(m)) <span class="co"># number of parameters</span></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co">#: calculate training MSE</span></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>mse_train <span class="ot">=</span> <span class="fu">mean</span>(m<span class="sc">$</span>residuals<span class="sc">^</span><span class="dv">2</span>) <span class="co"># training MSE</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co">#: calculate test MSE</span></span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>yhat <span class="ot">=</span> <span class="fu">predict</span>(m, data_test) <span class="co"># predictions at test X&#39;s</span></span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>mse_test <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="co">#: output a data frame of relevant info</span></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">degree=</span>deg, <span class="at">edf=</span>p, mse_train, mse_test)</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#: Function to fit, predict, and evaluate a polynomial regression model</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>poly_eval <span class="ot">&lt;-</span> <span class="cf">function</span>(deg, data_train, data_test){</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(deg<span class="sc">==</span><span class="dv">0</span>) m <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="dv">1</span>, <span class="at">data=</span>data_train) <span class="co"># intercept only model</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span> m <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span>deg), <span class="at">data=</span>data_train) <span class="co"># polynomial</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>p <span class="ot">=</span> <span class="fu">length</span>(<span class="fu">coef</span>(m)) <span class="co"># number of parameters</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">#: calculate training MSE</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>mse_train <span class="ot">=</span> <span class="fu">mean</span>(m<span class="sc">$</span>residuals<span class="sc">^</span><span class="dv">2</span>) <span class="co"># training MSE</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co">#: calculate test MSE</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>yhat <span class="ot">=</span> <span class="fu">predict</span>(m, data_test) <span class="co"># predictions at test X&#39;s</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>mse_test <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co">#: output a data frame of relevant info</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">degree=</span>deg, <span class="at">edf=</span>p, mse_train, mse_test)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">poly_eval</span>(<span class="at">deg=</span><span class="dv">1</span>, data_train, data_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">poly_eval</span>(<span class="at">deg=</span><span class="dv">1</span>, data_train, data_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
   degree   edf mse_train mse_test
    &lt;dbl&gt; &lt;int&gt;     &lt;dbl&gt;    &lt;dbl&gt;
 1      1     2      11.3     9.29</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">poly_eval</span>(<span class="at">deg=</span><span class="dv">2</span>, data_train, data_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">poly_eval</span>(<span class="at">deg=</span><span class="dv">2</span>, data_train, data_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
   degree   edf mse_train mse_test
    &lt;dbl&gt; &lt;int&gt;     &lt;dbl&gt;    &lt;dbl&gt;
 1      2     3      11.2     9.58</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">poly_eval</span>(<span class="at">deg=</span><span class="dv">3</span>, data_train, data_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">poly_eval</span>(<span class="at">deg=</span><span class="dv">3</span>, data_train, data_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
   degree   edf mse_train mse_test
@@ -3491,7 +3476,7 @@ Solution
 1      3     4      11.2     9.65</code></pre>
 </div>
 </div>
-<p>The results are not as expected. The lowest MSE on the test data occurs when the degree = 1, not 2. This suggests that we are dealing with a linear model not a quadratic one.</p>
+<p>The results are not as expected. The lowest MSE on the test data occurs when the degree = 1, instead of 2.</p>
 </div>
 </div>
 </section>
@@ -3509,28 +3494,28 @@ Solution
 </div>
 <div class="callout-body-container callout-body">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># function that generates yhat values using true function</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>gen_yhat <span class="ot">&lt;-</span> <span class="cf">function</span>(data_test) {</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>yhat_list <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(data_test)){</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  yhat <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> .<span class="dv">5</span><span class="sc">*</span>data_test<span class="sc">$</span>x[i] <span class="sc">+</span> .<span class="dv">2</span><span class="sc">*</span>(data_test<span class="sc">$</span>x[i]<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  yhat_list[i] <span class="ot">&lt;-</span> yhat</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>yhat_list</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>yhat_list <span class="ot">&lt;-</span> <span class="fu">gen_yhat</span>(data_test)</span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a><span class="co"># get the test MSE</span></span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>mse_test <span class="ot">&lt;-</span> <span class="fu">mean</span>((data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_list)<span class="sc">^</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># function that generates yhat values using true function</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>gen_yhat <span class="ot">&lt;-</span> <span class="cf">function</span>(data_test) {</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>yhat_list <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(data_test)){</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  yhat <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> .<span class="dv">5</span><span class="sc">*</span>data_test<span class="sc">$</span>x[i] <span class="sc">+</span> .<span class="dv">2</span><span class="sc">*</span>(data_test<span class="sc">$</span>x[i]<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  yhat_list[i] <span class="ot">&lt;-</span> yhat</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>yhat_list</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>yhat_list <span class="ot">&lt;-</span> <span class="fu">gen_yhat</span>(data_test)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="co"># get the test MSE</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>mse_test <span class="ot">&lt;-</span> <span class="fu">mean</span>((data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_list)<span class="sc">^</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>mse_test</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mse_test</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 8.97</code></pre>
 </div>
@@ -3565,54 +3550,54 @@ Solution
 </div>
 <div class="callout-body-container callout-body">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">613</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>MSE_deg1 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>MSE_deg2 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>MSE_deg3 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>){</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span>  <span class="dv">100</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  sd <span class="ot">&lt;-</span>  <span class="dv">3</span></span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">sim_x</span>(n)</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">sim_y</span>(x, <span class="at">sd =</span> sd)</span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  data_train <span class="ot">&lt;-</span> <span class="fu">tibble</span>(x,y)</span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>  deg1_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">1</span>), <span class="at">data=</span>data_train)</span>
-<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>  deg2_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">2</span>), <span class="at">data=</span>data_train)</span>
-<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>  deg3_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">3</span>), <span class="at">data=</span>data_train)</span>
-<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># caculate test MSE</span></span>
-<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>  yhat_1 <span class="ot">=</span> <span class="fu">predict</span>(deg1_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
-<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>  mse_test_deg1 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_1)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
-<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>  yhat_2 <span class="ot">=</span> <span class="fu">predict</span>(deg2_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
-<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>  mse_test_deg2 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_2)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
-<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>  yhat_3 <span class="ot">=</span> <span class="fu">predict</span>(deg3_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
-<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>  mse_test_deg3 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_3)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
-<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>  MSE_deg1[i] <span class="ot">&lt;-</span> mse_test_deg1</span>
-<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>  MSE_deg2[i] <span class="ot">&lt;-</span> mse_test_deg2</span>
-<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>  MSE_deg3[i] <span class="ot">&lt;-</span> mse_test_deg3</span>
-<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">613</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>MSE_deg1 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>MSE_deg2 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>MSE_deg3 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>){</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span>  <span class="dv">100</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  sd <span class="ot">&lt;-</span>  <span class="dv">3</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">sim_x</span>(n)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">sim_y</span>(x, <span class="at">sd =</span> sd)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>  data_train <span class="ot">&lt;-</span> <span class="fu">tibble</span>(x,y)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  deg1_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">1</span>), <span class="at">data=</span>data_train)</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>  deg2_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">2</span>), <span class="at">data=</span>data_train)</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>  deg3_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">3</span>), <span class="at">data=</span>data_train)</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># caculate test MSE</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>  yhat_1 <span class="ot">=</span> <span class="fu">predict</span>(deg1_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>  mse_test_deg1 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_1)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>  yhat_2 <span class="ot">=</span> <span class="fu">predict</span>(deg2_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>  mse_test_deg2 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_2)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>  yhat_3 <span class="ot">=</span> <span class="fu">predict</span>(deg3_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>  mse_test_deg3 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_3)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>  MSE_deg1[i] <span class="ot">&lt;-</span> mse_test_deg1</span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>  MSE_deg2[i] <span class="ot">&lt;-</span> mse_test_deg2</span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a>  MSE_deg3[i] <span class="ot">&lt;-</span> mse_test_deg3</span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>degree <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">length</span>(MSE_deg1)),<span class="fu">rep</span>(<span class="dv">2</span>, <span class="fu">length</span>(MSE_deg2)),<span class="fu">rep</span>(<span class="dv">3</span>, <span class="fu">length</span>(MSE_deg3)))</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                </span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>MSE <span class="ot">&lt;-</span> <span class="fu">c</span>(MSE_deg1, MSE_deg2, MSE_deg3)</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>kd_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(degree, MSE)</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>kd_df<span class="sc">$</span>degree <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(kd_df<span class="sc">$</span>degree)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>degree <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">length</span>(MSE_deg1)),<span class="fu">rep</span>(<span class="dv">2</span>, <span class="fu">length</span>(MSE_deg2)),<span class="fu">rep</span>(<span class="dv">3</span>, <span class="fu">length</span>(MSE_deg3)))</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>MSE <span class="ot">&lt;-</span> <span class="fu">c</span>(MSE_deg1, MSE_deg2, MSE_deg3)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>kd_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(degree, MSE)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>kd_df<span class="sc">$</span>degree <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(kd_df<span class="sc">$</span>degree)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(kd_df, <span class="fu">aes</span>(<span class="at">x=</span>MSE, <span class="at">fill=</span>degree)) <span class="sc">+</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">alpha=</span><span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks=</span><span class="fu">seq</span>(<span class="dv">7</span>,<span class="dv">11</span>, <span class="at">by=</span>.<span class="dv">5</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="fl">8.5</span>, <span class="dv">11</span>)) <span class="sc">+</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks=</span><span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">50</span>,<span class="at">by=</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(kd_df, <span class="fu">aes</span>(<span class="at">x=</span>MSE, <span class="at">fill=</span>degree)) <span class="sc">+</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">alpha=</span><span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks=</span><span class="fu">seq</span>(<span class="dv">7</span>,<span class="dv">11</span>, <span class="at">by=</span>.<span class="dv">5</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="fl">8.5</span>, <span class="dv">11</span>)) <span class="sc">+</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks=</span><span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">50</span>,<span class="at">by=</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Removed 4 rows containing non-finite outside the scale range
 (`stat_density()`).</code></pre>
@@ -3642,63 +3627,63 @@ Solution
 </div>
 <div class="callout-body-container callout-body">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">613</span>)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>count_best_model1 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>count_best_model2 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>count_best_model3 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>MSE_deg1 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>MSE_deg2 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>MSE_deg3 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>){</span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span>  <span class="dv">100</span></span>
-<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>  sd <span class="ot">&lt;-</span>  <span class="dv">3</span></span>
-<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">sim_x</span>(n)</span>
-<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">sim_y</span>(x, <span class="at">sd =</span> sd)</span>
-<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>  data_train <span class="ot">&lt;-</span> <span class="fu">tibble</span>(x,y)</span>
-<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>  deg1_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">1</span>), <span class="at">data=</span>data_train)</span>
-<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>  deg2_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">2</span>), <span class="at">data=</span>data_train)</span>
-<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>  deg3_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">3</span>), <span class="at">data=</span>data_train)</span>
-<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># caculate test MSE</span></span>
-<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>  yhat_1 <span class="ot">=</span> <span class="fu">predict</span>(deg1_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
-<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>  mse_test_deg1 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_1)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
-<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>  yhat_2 <span class="ot">=</span> <span class="fu">predict</span>(deg2_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
-<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>  mse_test_deg2 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_2)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
-<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a>  yhat_3 <span class="ot">=</span> <span class="fu">predict</span>(deg3_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
-<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a>  mse_test_deg3 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_3)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
-<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (mse_test_deg1 <span class="sc">&lt;</span> mse_test_deg2 <span class="sc">&amp;</span> mse_test_deg1 <span class="sc">&lt;</span> mse_test_deg3){</span>
-<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a>    count_best_model1 <span class="ot">&lt;-</span> count_best_model1 <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="cf">if</span> (mse_test_deg2 <span class="sc">&lt;</span> mse_test_deg1 <span class="sc">&amp;</span> mse_test_deg2 <span class="sc">&lt;</span> mse_test_deg3){</span>
-<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a>    count_best_model2 <span class="ot">&lt;-</span> count_best_model2 <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="cf">if</span> (mse_test_deg3 <span class="sc">&lt;</span> mse_test_deg1 <span class="sc">&amp;</span> mse_test_deg3 <span class="sc">&lt;</span> mse_test_deg2){</span>
-<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a>    count_best_model3 <span class="ot">&lt;-</span> count_best_model3 <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb25-46"><a href="#cb25-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-47"><a href="#cb25-47" aria-hidden="true" tabindex="-1"></a>  MSE_deg1[i] <span class="ot">&lt;-</span> mse_test_deg1</span>
-<span id="cb25-48"><a href="#cb25-48" aria-hidden="true" tabindex="-1"></a>  MSE_deg2[i] <span class="ot">&lt;-</span> mse_test_deg2</span>
-<span id="cb25-49"><a href="#cb25-49" aria-hidden="true" tabindex="-1"></a>  MSE_deg3[i] <span class="ot">&lt;-</span> mse_test_deg3</span>
-<span id="cb25-50"><a href="#cb25-50" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">613</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>count_best_model1 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>count_best_model2 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>count_best_model3 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>MSE_deg1 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>MSE_deg2 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>MSE_deg3 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>){</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span>  <span class="dv">100</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  sd <span class="ot">&lt;-</span>  <span class="dv">3</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">sim_x</span>(n)</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">sim_y</span>(x, <span class="at">sd =</span> sd)</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  data_train <span class="ot">&lt;-</span> <span class="fu">tibble</span>(x,y)</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>  deg1_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">1</span>), <span class="at">data=</span>data_train)</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>  deg2_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">2</span>), <span class="at">data=</span>data_train)</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>  deg3_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">3</span>), <span class="at">data=</span>data_train)</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># caculate test MSE</span></span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>  yhat_1 <span class="ot">=</span> <span class="fu">predict</span>(deg1_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>  mse_test_deg1 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_1)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>  yhat_2 <span class="ot">=</span> <span class="fu">predict</span>(deg2_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>  mse_test_deg2 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_2)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>  yhat_3 <span class="ot">=</span> <span class="fu">predict</span>(deg3_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>  mse_test_deg3 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_3)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (mse_test_deg1 <span class="sc">&lt;</span> mse_test_deg2 <span class="sc">&amp;</span> mse_test_deg1 <span class="sc">&lt;</span> mse_test_deg3){</span>
+<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a>    count_best_model1 <span class="ot">&lt;-</span> count_best_model1 <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb23-38"><a href="#cb23-38" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb23-39"><a href="#cb23-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-40"><a href="#cb23-40" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="cf">if</span> (mse_test_deg2 <span class="sc">&lt;</span> mse_test_deg1 <span class="sc">&amp;</span> mse_test_deg2 <span class="sc">&lt;</span> mse_test_deg3){</span>
+<span id="cb23-41"><a href="#cb23-41" aria-hidden="true" tabindex="-1"></a>    count_best_model2 <span class="ot">&lt;-</span> count_best_model2 <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb23-42"><a href="#cb23-42" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb23-43"><a href="#cb23-43" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="cf">if</span> (mse_test_deg3 <span class="sc">&lt;</span> mse_test_deg1 <span class="sc">&amp;</span> mse_test_deg3 <span class="sc">&lt;</span> mse_test_deg2){</span>
+<span id="cb23-44"><a href="#cb23-44" aria-hidden="true" tabindex="-1"></a>    count_best_model3 <span class="ot">&lt;-</span> count_best_model3 <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb23-45"><a href="#cb23-45" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb23-46"><a href="#cb23-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-47"><a href="#cb23-47" aria-hidden="true" tabindex="-1"></a>  MSE_deg1[i] <span class="ot">&lt;-</span> mse_test_deg1</span>
+<span id="cb23-48"><a href="#cb23-48" aria-hidden="true" tabindex="-1"></a>  MSE_deg2[i] <span class="ot">&lt;-</span> mse_test_deg2</span>
+<span id="cb23-49"><a href="#cb23-49" aria-hidden="true" tabindex="-1"></a>  MSE_deg3[i] <span class="ot">&lt;-</span> mse_test_deg3</span>
+<span id="cb23-50"><a href="#cb23-50" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-51"><a href="#cb23-51" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>model_degree <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>frequency_best_model <span class="ot">&lt;-</span> <span class="fu">c</span>(count_best_model1, count_best_model2, count_best_model3)</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>model_compare_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(model_degree, frequency_best_model)</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>model_compare_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>model_degree <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>frequency_best_model <span class="ot">&lt;-</span> <span class="fu">c</span>(count_best_model1, count_best_model2, count_best_model3)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>model_compare_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(model_degree, frequency_best_model)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>model_compare_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  model_degree frequency_best_model
 1            1                   28
@@ -3723,64 +3708,64 @@ Solution
 </div>
 <div class="callout-body-container callout-body">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">613</span>)</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>f_function <span class="ot">&lt;-</span> <span class="cf">function</span>(n, sd, data_test) {</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  count_best_model1 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  count_best_model2 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  count_best_model3 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  MSE_deg1 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  MSE_deg2 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  MSE_deg3 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>){</span>
-<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span>  n</span>
-<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    sd <span class="ot">&lt;-</span>  sd</span>
-<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">sim_x</span>(n)</span>
-<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">sim_y</span>(x, <span class="at">sd =</span> sd)</span>
-<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>    data_train <span class="ot">&lt;-</span> <span class="fu">tibble</span>(x,y)</span>
-<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>    deg1_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">1</span>), <span class="at">data=</span>data_train)</span>
-<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>    deg2_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">2</span>), <span class="at">data=</span>data_train)</span>
-<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>    deg3_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">3</span>), <span class="at">data=</span>data_train)</span>
-<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># caculate test MSE</span></span>
-<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a>    yhat_1 <span class="ot">=</span> <span class="fu">predict</span>(deg1_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
-<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a>    mse_test_deg1 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_1)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
-<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a>    yhat_2 <span class="ot">=</span> <span class="fu">predict</span>(deg2_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
-<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a>    mse_test_deg2 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_2)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
-<span id="cb28-34"><a href="#cb28-34" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb28-35"><a href="#cb28-35" aria-hidden="true" tabindex="-1"></a>    yhat_3 <span class="ot">=</span> <span class="fu">predict</span>(deg3_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
-<span id="cb28-36"><a href="#cb28-36" aria-hidden="true" tabindex="-1"></a>    mse_test_deg3 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_3)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
-<span id="cb28-37"><a href="#cb28-37" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb28-38"><a href="#cb28-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (mse_test_deg1 <span class="sc">&lt;</span> mse_test_deg2 <span class="sc">&amp;</span> mse_test_deg1 <span class="sc">&lt;</span> mse_test_deg3){</span>
-<span id="cb28-39"><a href="#cb28-39" aria-hidden="true" tabindex="-1"></a>    count_best_model1 <span class="ot">&lt;-</span> count_best_model1 <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb28-40"><a href="#cb28-40" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb28-41"><a href="#cb28-41" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb28-42"><a href="#cb28-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (mse_test_deg2 <span class="sc">&lt;</span> mse_test_deg1 <span class="sc">&amp;</span> mse_test_deg2 <span class="sc">&lt;</span> mse_test_deg3){</span>
-<span id="cb28-43"><a href="#cb28-43" aria-hidden="true" tabindex="-1"></a>    count_best_model2 <span class="ot">&lt;-</span> count_best_model2 <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb28-44"><a href="#cb28-44" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb28-45"><a href="#cb28-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (mse_test_deg3 <span class="sc">&lt;</span> mse_test_deg1 <span class="sc">&amp;</span> mse_test_deg3 <span class="sc">&lt;</span> mse_test_deg2){</span>
-<span id="cb28-46"><a href="#cb28-46" aria-hidden="true" tabindex="-1"></a>    count_best_model3 <span class="ot">&lt;-</span> count_best_model3 <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb28-47"><a href="#cb28-47" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb28-48"><a href="#cb28-48" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb28-49"><a href="#cb28-49" aria-hidden="true" tabindex="-1"></a>    MSE_deg1[i] <span class="ot">&lt;-</span> mse_test_deg1</span>
-<span id="cb28-50"><a href="#cb28-50" aria-hidden="true" tabindex="-1"></a>    MSE_deg2[i] <span class="ot">&lt;-</span> mse_test_deg2</span>
-<span id="cb28-51"><a href="#cb28-51" aria-hidden="true" tabindex="-1"></a>    MSE_deg3[i] <span class="ot">&lt;-</span> mse_test_deg3</span>
-<span id="cb28-52"><a href="#cb28-52" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb28-53"><a href="#cb28-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-54"><a href="#cb28-54" aria-hidden="true" tabindex="-1"></a>  model_degree <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>)</span>
-<span id="cb28-55"><a href="#cb28-55" aria-hidden="true" tabindex="-1"></a>  frequency_best_model <span class="ot">&lt;-</span> <span class="fu">c</span>(count_best_model1, count_best_model2, count_best_model3)</span>
-<span id="cb28-56"><a href="#cb28-56" aria-hidden="true" tabindex="-1"></a>  model_compare_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(model_degree, frequency_best_model)</span>
-<span id="cb28-57"><a href="#cb28-57" aria-hidden="true" tabindex="-1"></a>  model_compare_df</span>
-<span id="cb28-58"><a href="#cb28-58" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>f_function <span class="ot">&lt;-</span> <span class="cf">function</span>(n, sd, data_test) {</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">613</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  count_best_model1 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  count_best_model2 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  count_best_model3 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  MSE_deg1 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  MSE_deg2 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  MSE_deg3 <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>){</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span>  n</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    sd <span class="ot">&lt;-</span>  sd</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">sim_x</span>(n)</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">sim_y</span>(x, <span class="at">sd =</span> sd)</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>    data_train <span class="ot">&lt;-</span> <span class="fu">tibble</span>(x,y)</span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>    deg1_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">1</span>), <span class="at">data=</span>data_train)</span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>    deg2_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">2</span>), <span class="at">data=</span>data_train)</span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>    deg3_model <span class="ot">=</span> <span class="fu">lm</span>(y<span class="sc">~</span><span class="fu">poly</span>(x, <span class="at">degree=</span><span class="dv">3</span>), <span class="at">data=</span>data_train)</span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># caculate test MSE</span></span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>    yhat_1 <span class="ot">=</span> <span class="fu">predict</span>(deg1_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>    mse_test_deg1 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_1)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>    yhat_2 <span class="ot">=</span> <span class="fu">predict</span>(deg2_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>    mse_test_deg2 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_2)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a>    yhat_3 <span class="ot">=</span> <span class="fu">predict</span>(deg3_model, data_test) <span class="co"># predictions at test X&#39;s</span></span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a>    mse_test_deg3 <span class="ot">=</span> <span class="fu">mean</span>( (data_test<span class="sc">$</span>y <span class="sc">-</span> yhat_3)<span class="sc">^</span><span class="dv">2</span> )<span class="co"># test MSE</span></span>
+<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (mse_test_deg1 <span class="sc">&lt;</span> mse_test_deg2 <span class="sc">&amp;</span> mse_test_deg1 <span class="sc">&lt;</span> mse_test_deg3){</span>
+<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a>    count_best_model1 <span class="ot">&lt;-</span> count_best_model1 <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (mse_test_deg2 <span class="sc">&lt;</span> mse_test_deg1 <span class="sc">&amp;</span> mse_test_deg2 <span class="sc">&lt;</span> mse_test_deg3){</span>
+<span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a>    count_best_model2 <span class="ot">&lt;-</span> count_best_model2 <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (mse_test_deg3 <span class="sc">&lt;</span> mse_test_deg1 <span class="sc">&amp;</span> mse_test_deg3 <span class="sc">&lt;</span> mse_test_deg2){</span>
+<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a>    count_best_model3 <span class="ot">&lt;-</span> count_best_model3 <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-49"><a href="#cb26-49" aria-hidden="true" tabindex="-1"></a>    MSE_deg1[i] <span class="ot">&lt;-</span> mse_test_deg1</span>
+<span id="cb26-50"><a href="#cb26-50" aria-hidden="true" tabindex="-1"></a>    MSE_deg2[i] <span class="ot">&lt;-</span> mse_test_deg2</span>
+<span id="cb26-51"><a href="#cb26-51" aria-hidden="true" tabindex="-1"></a>    MSE_deg3[i] <span class="ot">&lt;-</span> mse_test_deg3</span>
+<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-53"><a href="#cb26-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-54"><a href="#cb26-54" aria-hidden="true" tabindex="-1"></a>  model_degree <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>)</span>
+<span id="cb26-55"><a href="#cb26-55" aria-hidden="true" tabindex="-1"></a>  frequency_best_model <span class="ot">&lt;-</span> <span class="fu">c</span>(count_best_model1, count_best_model2, count_best_model3)</span>
+<span id="cb26-56"><a href="#cb26-56" aria-hidden="true" tabindex="-1"></a>  model_compare_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(model_degree, frequency_best_model)</span>
+<span id="cb26-57"><a href="#cb26-57" aria-hidden="true" tabindex="-1"></a>  model_compare_df</span>
+<span id="cb26-58"><a href="#cb26-58" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -3792,20 +3777,21 @@ Solution
 <li>Be sure to generate new test data with (<span class="math inline">\(n = 10000\)</span>, <span class="math inline">\(\sigma = 2\)</span>, using <code>seed = 612</code>).</li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">612</span>)</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>n_test <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>x_test <span class="ot">&lt;-</span> <span class="fu">sim_x</span>(n_test)</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>y_test <span class="ot">&lt;-</span> <span class="fu">sim_y</span>(x_test, <span class="at">sd=</span>sd)</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>data_test_new <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x=</span>x_test, <span class="at">y=</span>y_test)</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="fu">f_function</span>(<span class="dv">10000</span>, <span class="dv">2</span>, data_test_new)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">612</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>n_test <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>sd <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>x_test <span class="ot">&lt;-</span> <span class="fu">sim_x</span>(n_test)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>y_test <span class="ot">&lt;-</span> <span class="fu">sim_y</span>(x_test, <span class="at">sd=</span>sd)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>data_test_new <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x=</span>x_test, <span class="at">y=</span>y_test)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="fu">f_function</span>(<span class="dv">100</span>, <span class="dv">2</span>, data_test_new)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  model_degree frequency_best_model
-1            1                    0
-2            2                   59
-3            3                   41</code></pre>
+1            1                   19
+2            2                   71
+3            3                   10</code></pre>
 </div>
 </div>
 </section>
@@ -3826,20 +3812,21 @@ Solution
 </div>
 <div class="callout-body-container callout-body">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">612</span>)</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>n_test <span class="ot">&lt;-</span> <span class="dv">300</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>x_test <span class="ot">&lt;-</span> <span class="fu">sim_x</span>(n_test)</span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>y_test <span class="ot">&lt;-</span> <span class="fu">sim_y</span>(x_test, <span class="at">sd=</span>sd)</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>data_test_new1 <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x=</span>x_test, <span class="at">y=</span>y_test)</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="fu">f_function</span>(<span class="dv">300</span>, <span class="dv">4</span>, data_test_new)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">612</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>n_test <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>sd <span class="ot">&lt;-</span> <span class="dv">4</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>x_test <span class="ot">&lt;-</span> <span class="fu">sim_x</span>(n_test)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>y_test <span class="ot">&lt;-</span> <span class="fu">sim_y</span>(x_test, <span class="at">sd=</span>sd)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>data_test_new1 <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x=</span>x_test, <span class="at">y=</span>y_test)</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="fu">f_function</span>(<span class="dv">300</span>, <span class="dv">4</span>, data_test_new1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  model_degree frequency_best_model
-1            1                   13
-2            2                   70
-3            3                   17</code></pre>
+1            1                    8
+2            2                   80
+3            3                   12</code></pre>
 </div>
 </div>
 </div>
@@ -3858,7 +3845,7 @@ Solution
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Add solution here</p>
+<p>As standard deviation increases, there is more variability in which model is the best. As n increases, there is less variability since there is more data. The true model form (quadratic) is not always the best model to use when prediction is the goal because it might overfit the data.</p>
 </div>
 </div>
 </section>

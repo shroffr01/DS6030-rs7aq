@@ -73,9 +73,11 @@ data_train <- tibble(x,y)
 
 ```{r}
 ggplot(data_train, aes(x,y)) + geom_point() + 
-  geom_function(fun = f, color = 'red') +
-  scale_x_continuous(breaks=seq(-2,2, by=0.5)) +
+  geom_function(fun = f, color = 'red', linewidth=1) +
+  scale_x_continuous(breaks=seq(-2,2, by=1)) +
   scale_y_continuous(breaks=seq(-50,50,by=2))
+
+#ggsave("plot_high_dpi.png", plot = p, dpi = 300)
 
 
 ```
@@ -120,6 +122,10 @@ set.seed(612)
 x_test <- sim_x(n_test)
 y_test <- sim_y(x_test, sd=sd)
 data_test <- tibble(x=x_test, y=y_test)
+```
+
+```{r}
+data_test
 ```
 
 ```{r}
