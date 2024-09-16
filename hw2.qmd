@@ -210,7 +210,7 @@ output <- tibble(k = k, edf = edf, mse_train, mse_test)
 ```{r}
 set.seed(221)
 
-folds <- 10
+10
 fold <-  sample(rep(1:folds, length=nrow(data_train))) 
 
 k_MSE_vals <- vector()
