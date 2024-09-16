@@ -208,10 +208,6 @@ output <- tibble(k = k, edf = edf, mse_train, mse_test)
 ```
 
 ```{r}
-data_train
-```
-
-```{r}
 set.seed(221)
 
 folds <- 10
@@ -281,7 +277,7 @@ ggplot(data=data_df, aes(x=edf_vals_m,y=k_MSE_vals)) +
   geom_line(color='blue', linewidth=2)
 ```
 
-Add solution here
+The optimal EDF appears to be around 10.
 :::
 
 ## c. Choose $k$
@@ -339,7 +335,30 @@ Plot both the cross-validation estimated and (true) error calculated from the te
 -   Each plot should have two lines: one from part *a* and one from part *d*
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+CV_10_fold_KNN <- k_MSE_vals
+Test_KNN <- MSE_knn
+
+data_df_combined <- tibble(k_seq, CV_10_fold_KNN, Test_KNN)
+data_df_combined_k <- data_df_combined %>%
+  pivot_longer(cols=c(CV_10_fold_KNN, Test_KNN), names_to='Model', values_to='MSE')
+
+data_df_combined_2 <- tibble(edf_vals_m, CV_10_fold_KNN, Test_KNN)
+data_df_combined_edf <- data_df_combined_2 %>%
+  pivot_longer(cols=c(CV_10_fold_KNN, Test_KNN), names_to='Model', values_to='MSE')
+```
+
+```{r}
+ggplot(data=data_df_combined_k, aes(x=k_seq,y=MSE, color=Model)) + 
+  geom_line(linewidth=1) + 
+  labs(title='Plot', x='K',y='MSE')
+```
+
+```{r}
+ggplot(data=data_df_combined_edf, aes(x=edf_vals_m,y=MSE, color=Model)) + 
+  geom_line(linewidth=1)+ 
+  labs(title='Plot', x='EDF',y='MSE')
+```
 :::
 
 ## f. Did cross-validation work as intended?
@@ -347,7 +366,5 @@ Add solution here
 Based on the plots from *e*, does it appear that cross-validation worked as intended? How sensitive is the choice of $k$ on the resulting test MSE?
 
 ::: {.callout-note title="Solution"}
-```{r}
-
-```
+Based on the plots from e, it does appear that cross validation did work as intended for the post part. The choice of K is very sensitive to the resulting test MSE because as K increases, the model tends to underfit the data and thus the test data performs very poorly.
 :::
