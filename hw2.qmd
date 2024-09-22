@@ -159,10 +159,11 @@ bind_cols(data_eval) %>% # add the eval points
 pivot_longer(-x, names_to="simulation", values_to="y") # convert to long format
 
 
-ggplot(data_train, aes(x,y)) +
-geom_line(data=data_fitted, color="black", alpha=.10, aes(group=simulation)) +
+ggplot(data_train, aes(x,y)) + 
+  stat_smooth(method = "lm", formula = y ~ poly(x, 5), aes(color = "5th Degree fit"), se = FALSE)  +
   geom_ribbon(aes(ymin=lower, ymax=upper), data=data_org,fill='red',alpha=0.4)+
-geom_point()
+  scale_x_continuous(breaks=seq(-3,3, by=.5)) +
+  scale_y_continuous(breaks=seq(-50,50,by=2))  
 ```
 :::
 
@@ -210,7 +211,7 @@ output <- tibble(k = k, edf = edf, mse_train, mse_test)
 ```{r}
 set.seed(221)
 
-10
+folds <- 10
 fold <-  sample(rep(1:folds, length=nrow(data_train))) 
 
 k_MSE_vals <- vector()
@@ -235,7 +236,7 @@ for (k in 1:38){
     
     output <- knn_eval(k, data_fit, data_eval)
     MSE_vals[j] <- output['mse_test']
-    edf_vals[i] <- output['edf']
+    edf_vals[j] <- output['edf']
   
   }
 
@@ -260,8 +261,11 @@ data_df <- tibble(k_seq, k_MSE_vals)
 ggplot(data=data_df, aes(x=k_seq,y=k_MSE_vals)) + 
   geom_line(color='blue', linewidth=2)
 
+
 ```
 :::
+
+The optimal k value is 8.
 
 ## b. Find the optimal *edf*
 
@@ -277,7 +281,7 @@ ggplot(data=data_df, aes(x=edf_vals_m,y=k_MSE_vals)) +
   geom_line(color='blue', linewidth=2)
 ```
 
-The optimal EDF appears to be around 10.
+The optimal EDF appears to be around 11.
 :::
 
 ## c. Choose $k$
@@ -285,7 +289,7 @@ The optimal EDF appears to be around 10.
 After running cross-validation, a final model fit from *all* of the training data needs to be produced to make predictions. What value of $k$ would you choose? Why?
 
 ::: {.callout-note title="Solution"}
-I would choose 9 as my k for the KNN model, because this is where the lowest test MSE begins and also when the model is simpler compared to k = 10, or 11.
+I would choose 8 as my k for the KNN model, because this is where the lowest test MSE begins and also when the model is simpler compared to k = 9, or 10.
 :::
 
 ## d. Evaluate actual performance
@@ -366,5 +370,20 @@ ggplot(data=data_df_combined_edf, aes(x=edf_vals_m,y=MSE, color=Model)) +
 Based on the plots from *e*, does it appear that cross-validation worked as intended? How sensitive is the choice of $k$ on the resulting test MSE?
 
 ::: {.callout-note title="Solution"}
-Based on the plots from e, it does appear that cross validation did work as intended for the post part. The choice of K is very sensitive to the resulting test MSE because as K increases, the model tends to underfit the data and thus the test data performs very poorly.
+Based on the plots from e, it does appear that cross validation did work as intended for the post part. The choice of K is very sensitive to the resulting test MSE because as K increases, the model tends to underfit the data and thus the test data performs very poorly. Lower choice of K indicates more flexibility.
+
+```{r}
+A <- matrix(c(0.7, 0.2, 0.1, 0.3, 0.4, 0.3, 0.2, 0.3, 0.5), nrow=3, byrow=TRUE)
+B <- matrix(c(0.7, 0.2, 0.1, 0.3, 0.4, 0.3, 0.2, 0.3, 0.5), nrow=3, byrow=TRUE)
+
+for (i in 1:20){
+  C <- A %*% B
+  A <- C
+  B <- C
+}
+```
+
+```{r}
+C
+```
 :::
