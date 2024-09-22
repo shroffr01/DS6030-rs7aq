@@ -74,17 +74,18 @@ library(glmnet)
 
 n_train <- 1000
 n_test <- 100
-n.folds <- 5
+K <- 5
 alpha <- 1
 M <- 100
-folds = rep(1:10, length=nrow(X_train))
+
+folds = rep(1:K, length=n_train)
 
 getData <- function(n) mlbench.friedman1(n, sd=2)
 
 set.seed(600)
 
 x_data <- data$x
-y-data <- data$y
+y_data <- data$y
 
 lambda_min_mse <- vector()
 lambda_1se_mse <- vector()
@@ -96,7 +97,7 @@ x_data <- as.matrix(data_train$x)
 y_data <- data_train$y
 
 # 2. Build Training Models using cross-validation, e.g., cv.glmnet()
-train_model <- cv.glmnet(x_data, y_data, lambda=lambda, alpha=alpha, foldid= folds)
+train_model <- cv.glmnet(x_data, y_data, alpha=alpha, foldid= folds)
 
 # 3. get lambda that minimizes cv error and 1 SE rule
 lambda_min <- train_model$lambda.min
@@ -109,18 +110,29 @@ y_test_data <- data_test$y
 
 # 5. Predict y values for test data (for each model: min, 1SE)
 yhat_lambda_min = predict(train_model, x_test_data, s = "lambda.min") 
-yhat_lambda_1se = predict(train_model, X_test_data, s = "lambda.1se")
+yhat_lambda_1se = predict(train_model, x_test_data, s = "lambda.1se")
+
+mse_lambda_min <- mean((y_test_data - yhat_lambda_min)^2)
+mse_lambda_1se <- mean((y_test_data - yhat_lambda_1se)^2)
 
 # 6. Evaluate predictions
-lambda_min_mse[i] <- yhat_lambda_min
-lambda_1se_mse[i] <- yhat_lambda_1se
+lambda_min_mse[m] <- mse_lambda_min
+lambda_1se_mse[m] <- mse_lambda_1se
 
 }
+
+lambda_min_mse <- unlist(lambda_min_mse)
+lambda_1se_mse <- unlist(lambda_1se_mse)
 
 mean_lambda_min_MSE <- mean(lambda_min_mse)
 mean_lambda_1se_MSE <- mean(lambda_1se_mse)
 
 
+```
+
+```{r}
+mean_lambda_min_MSE
+mean_lambda_1se_MSE
 ```
 :::
 
@@ -129,7 +141,13 @@ mean_lambda_1se_MSE <- mean(lambda_1se_mse)
 Provide results and discussion of a hypothesis test comparing $\lambda_{\rm min}$ and $\lambda_{\rm 1SE}$.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+The MSE for the minimum lambda is slightly lower than the 1se lambda which makes sense. We can now perform a hypothesis test comparing lambda min and lambda 1se.
+
+```{r}
+t_test_result <- t.test(lambda_min_mse, lambda_1se_mse)
+t_test_result
+
+```
 :::
 
 # Problem 2 Prediction Contest: Real Estate Pricing
@@ -146,7 +164,25 @@ Load the data and create necessary data structures for running *elastic net*.
 -   Note: there are some categorical predictors so at the least you will have to convert those to something numeric (e.g., one-hot or dummy coding).
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+rs_train <- read_csv('realestate-train.csv')
+
+rs_train['SqFeet'] <- rs_train$SqFeet/sd(rs_train$SqFeet)
+rs_train['LotSize'] <- rs_train$LotSize/sd(rs_train$LotSize)
+rs_train['CentralAir'] <- ifelse(rs_train$CentralAir=="Y",1,0)
+rs_train <- rs_train[,c('price', 'GarageCars', 'Fireplaces', 'TotRmsAbvGrd', 'Baths','SqFeet', 'CentralAir', 'Age', 'LotSize', 'condition')]
+rs_train
+```
+
+```{r}
+rs_test <- read_csv('realestate-test.csv')
+
+rs_test['SqFeet'] <- rs_test$SqFeet/sd(rs_test$SqFeet)
+rs_test['LotSize'] <- rs_test$LotSize/sd(rs_test$LotSize)
+rs_test['CentralAir'] <- ifelse(rs_test$CentralAir=="Y",1,0)
+rs_test <- rs_test[,c('GarageCars', 'Fireplaces', 'TotRmsAbvGrd', 'Baths','SqFeet', 'CentralAir', 'Age', 'LotSize', 'condition')]
+rs_test
+```
 :::
 
 ## b. Fit elastic net model
@@ -159,7 +195,36 @@ Use an *elastic net* model to predict the `price` of the test data.
 -   Describe how you choose those tuning parameters
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+# finding minimum alpha and lambda based on training data
+alpha <- seq(0,1,0.05)
+
+k <- 10
+folds = rep(1:K, length=nrow(rs_train))
+
+min_MSE_list <- vector()
+min_lambda_list <- vector()
+
+for (a in 1:length(alpha)){
+  
+x_train <- as.matrix(rs_train[,-1])
+y_train <- rs_train$price
+
+rs_train_model <- cv.glmnet(x_train, y_train, alpha=alpha[a], foldid = folds)
+
+lambda_min <- rs_train_model$lambda.min
+
+min_lambda_index <- which(rs_train_model$lambda == lambda_min)
+min_mse <- rs_train_model$cvm[min_lambda_index]
+
+min_MSE_list[a] <- min_mse
+min_lambda_list[a] <- lambda_min
+
+}
+
+min_MSE_list
+min_lambda_list
+```
 :::
 
 ## c. Submit predictions
