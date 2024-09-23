@@ -66,14 +66,12 @@ for(m in 1:M) {
 ## a. Code for the simulation and performance results
 
 ::: {.callout-note title="Solution"}
-Add solution here
-
 ```{r}
 library(mlbench)
 library(glmnet)
 
 n_train <- 1000
-n_test <- 100
+n_test <- 5000
 K <- 5
 alpha <- 1
 M <- 100
@@ -84,15 +82,17 @@ getData <- function(n) mlbench.friedman1(n, sd=2)
 
 set.seed(600)
 
-x_data <- data$x
-y_data <- data$y
-
 lambda_min_mse <- vector()
 lambda_1se_mse <- vector()
 
 for(m in 1:M) {
-
+  
+# 1. Generate Training Data
 data_train <- getData(n_train)
+
+x_data <- data_train$x
+y_data <- data_train$y
+
 x_data <- as.matrix(data_train$x)
 y_data <- data_train$y
 
@@ -146,8 +146,9 @@ The MSE for the minimum lambda is slightly lower than the 1se lambda which makes
 ```{r}
 t_test_result <- t.test(lambda_min_mse, lambda_1se_mse)
 t_test_result
-
 ```
+
+The confidence range values are both negative, indicating there is a statistically significant difference between the two MSE values.
 :::
 
 # Problem 2 Prediction Contest: Real Estate Pricing
@@ -240,8 +241,9 @@ min_lambda_list <- unlist(min_lambda_list)
 b <- min_lambda_list[2]
 b
 
-best_yhat_test <- rs_yhat_test_list[2]
-best_yhat_test
+yhat <- unlist(rs_yhat_test_list[2])
+yhat <- as.data.frame(yhat)
+yhat
 ```
 
 The minimum MSE corresponds to an alpha value of 0.1 and a lambda value of 0.477.
@@ -254,7 +256,10 @@ Submit a .csv file (ensure comma separated format) named `lastname_firstname.csv
 -   You will receive credit for a proper submission; the top five scores will receive 2 bonus points.
 
 ::: {.callout-note title="Solution"}
-CSV Created
+```{r}
+
+write.csv(yhat, "C:/Users/shrof/R/UVA/DS6030-rs7aq/Shroff_Rohan.csv", row.names=FALSE)
+```
 :::
 
 ## d. Report anticpated performance
@@ -262,5 +267,10 @@ CSV Created
 Report the anticipated performance of your method in terms of RMSE. We will see how close your performance assessment matches the actual value.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+The anticipated performance in terms of RMSE is below. To calculate this, I took the minimum mean MSE, which occurred at alpha = 0.1, and took the square root of this.
+
+```{r}
+antic_perf <- (min_MSE_list[2] ** 0.5)
+antic_perf
+```
 :::
