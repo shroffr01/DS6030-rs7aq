@@ -204,6 +204,7 @@ folds = rep(1:K, length=nrow(rs_train))
 
 min_MSE_list <- vector()
 min_lambda_list <- vector()
+rs_yhat_test_list <- list()
 
 for (a in 1:length(alpha)){
   
@@ -214,17 +215,36 @@ rs_train_model <- cv.glmnet(x_train, y_train, alpha=alpha[a], foldid = folds)
 
 lambda_min <- rs_train_model$lambda.min
 
+x_test <- as.matrix(rs_test)
+rs_yhat_test <- predict(rs_train_model, x_test, s=rs_train_model$lambda.min)
+
 min_lambda_index <- which(rs_train_model$lambda == lambda_min)
 min_mse <- rs_train_model$cvm[min_lambda_index]
 
 min_MSE_list[a] <- min_mse
 min_lambda_list[a] <- lambda_min
+rs_yhat_test_list[[a]] <- rs_yhat_test
 
 }
 
 min_MSE_list
 min_lambda_list
 ```
+
+```{r}
+min_MSE_list <- unlist(min_MSE_list)
+a <- which.min(min_MSE_list)
+a
+
+min_lambda_list <- unlist(min_lambda_list)
+b <- min_lambda_list[2]
+b
+
+best_yhat_test <- rs_yhat_test_list[2]
+best_yhat_test
+```
+
+The minimum MSE corresponds to an alpha value of 0.1 and a lambda value of 0.477.
 :::
 
 ## c. Submit predictions
@@ -234,7 +254,7 @@ Submit a .csv file (ensure comma separated format) named `lastname_firstname.csv
 -   You will receive credit for a proper submission; the top five scores will receive 2 bonus points.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+CSV Created
 :::
 
 ## d. Report anticpated performance
