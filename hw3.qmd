@@ -141,7 +141,7 @@ mean_lambda_1se_MSE
 Provide results and discussion of a hypothesis test comparing $\lambda_{\rm min}$ and $\lambda_{\rm 1SE}$.
 
 ::: {.callout-note title="Solution"}
-The MSE for the minimum lambda is slightly lower than the 1se lambda which makes sense. We can now perform a hypothesis test comparing lambda min and lambda 1se.
+The MSE for the minimum lambda is slightly lower than the 1se lambda which makes sense. We can now perform a hypothesis test comparing lambda min and lambda 1se. We can therefore reject the null hypothesis.
 
 ```{r}
 t_test_result <- t.test(lambda_min_mse, lambda_1se_mse)
@@ -171,7 +171,20 @@ rs_train <- read_csv('realestate-train.csv')
 rs_train['SqFeet'] <- rs_train$SqFeet/sd(rs_train$SqFeet)
 rs_train['LotSize'] <- rs_train$LotSize/sd(rs_train$LotSize)
 rs_train['CentralAir'] <- ifelse(rs_train$CentralAir=="Y",1,0)
-rs_train <- rs_train[,c('price', 'GarageCars', 'Fireplaces', 'TotRmsAbvGrd', 'Baths','SqFeet', 'CentralAir', 'Age', 'LotSize', 'condition')]
+rs_train['HouseStyle'] <- as.numeric(factor(rs_train$HouseStyle))
+
+rs_train <- rs_train %>%
+  mutate(HouseStyle = recode(HouseStyle,
+                             '2Story' = 1,
+                             '1Story' = 2,
+                             '1.5Unf' = 3,
+                             'SLvl' = 4,
+                             '2.5Unf' = 5,
+                             '1.5Fin' = 6,
+                             '2.5Fin' = 7,
+                             'SFoyer' = 8
+                             ))
+rs_train <- rs_train[,c('price', 'GarageCars', 'Fireplaces', 'TotRmsAbvGrd', 'Baths','SqFeet', 'CentralAir', 'Age', 'LotSize', 'HouseStyle', 'condition')]
 rs_train
 ```
 
@@ -181,7 +194,20 @@ rs_test <- read_csv('realestate-test.csv')
 rs_test['SqFeet'] <- rs_test$SqFeet/sd(rs_test$SqFeet)
 rs_test['LotSize'] <- rs_test$LotSize/sd(rs_test$LotSize)
 rs_test['CentralAir'] <- ifelse(rs_test$CentralAir=="Y",1,0)
-rs_test <- rs_test[,c('GarageCars', 'Fireplaces', 'TotRmsAbvGrd', 'Baths','SqFeet', 'CentralAir', 'Age', 'LotSize', 'condition')]
+rs_test['HouseStyle'] <- as.numeric(factor(rs_test$HouseStyle))
+
+rs_test <- rs_test %>%
+  mutate(HouseStyle = recode(HouseStyle,
+                             '2Story' = 1,
+                             '1Story' = 2,
+                             '1.5Unf' = 3,
+                             'SLvl' = 4,
+                             '2.5Unf' = 5,
+                             '1.5Fin' = 6,
+                             '2.5Fin' = 7,
+                             'SFoyer' = 8
+                             ))
+rs_test <- rs_test[,c('GarageCars', 'Fireplaces', 'TotRmsAbvGrd', 'Baths','SqFeet', 'CentralAir', 'Age', 'LotSize', 'HouseStyle', 'condition')]
 rs_test
 ```
 :::
@@ -238,7 +264,7 @@ a <- which.min(min_MSE_list)
 a
 
 min_lambda_list <- unlist(min_lambda_list)
-b <- min_lambda_list[2]
+b <- min_lambda_list[a]
 b
 
 yhat <- unlist(rs_yhat_test_list[2])
