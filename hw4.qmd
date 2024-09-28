@@ -21,6 +21,8 @@ data_dir = 'https://mdporter.github.io/teaching/data/' # data directory
 library(tidyverse)    # functions for data manipulation  
 library(ranger)       # fast random forest implementation
 library(modeldata)    # for the ames housing data
+install.packages('spm')
+
 ```
 
 # Problem 1: Tree splitting metrics for classification
@@ -62,7 +64,7 @@ Suppose we produce ten bootstrapped samples from a data set containing red and g
 ISLR 8.2 describes the *majority vote* approach for making a hard classification from a set of bagged classifiers. What is the final classification for this example using majority voting?
 
 ::: {.callout-note title="Solution"}
-Solution here
+Using majority voting, the final classification for this example is green, since there are 6 predictions with a probability less than 0.5, and 4 more than 0.5.
 :::
 
 ## b. Average Probability
@@ -70,7 +72,11 @@ Solution here
 An alternative is to base the final classification on the average probability. What is the final classification for this example using average probability?
 
 ::: {.callout-note title="Solution"}
-Solution here
+```{r}
+mean(p_red)
+```
+
+The final classification based on the average probability is red, since the value is greater than 0.5.
 :::
 
 # Problem 3: Random Forest Tuning
@@ -86,7 +92,11 @@ List all of the random forest tuning parameters in the `ranger::ranger()` functi
 Indicate the tuning parameters you think will be most important to optimize?
 
 ::: {.callout-note title="Solution"}
-Solution here
+I think the most important parameters are variety (# of predictors evaluated for each split) and complexity (depth/size of tree, controlled in several ways). The total number of trees when running a bootstrapped random forest is also important, this value should be high.
+:::
+
+::: {.callout-note title="Solution"}
+Looking at the ranger function, the most important parameters are mtry (# of predictors) and min.obs (min obs in leaf). Since we are dealing with a regression tree, mtry = p/3 and min.obs = 5.
 :::
 
 ## b. Implement Random Forest
@@ -94,7 +104,40 @@ Solution here
 Use a random forest model to predict the sales price, `Sale_Price`. Use the default parameters and report the 10-fold cross-validation RMSE (square root of mean squared error).
 
 ::: {.callout-note title="Solution"}
-Solution here
+Steps: Define folds,
+
+```{r}
+ames_df <- ames
+```
+
+```{r}
+K <- 10
+folds = rep(1:K, length=nrow(ames_df))
+
+rmse_list <- list()
+
+for (i in 1:K){
+  
+  ames_train <- filter(ames_df, folds!=i)
+  ames_test <- filter(ames_df, folds==i)
+  
+  rf_model <- ranger(Sale_Price~., data=ames_train)
+  pred <- predict(rf_model, ames_test)
+  
+  MSE <- mean((pred$predictions - ames_test$Sale_Price)^2)
+  RMSE <- (MSE^0.5)
+  
+  rmse_list[i] <- RMSE
+
+  
+}
+
+rmse_list <- unlist(rmse_list)
+
+mean(rmse_list)
+```
+
+10 fold CV random forest results in a mean RMSE of 26,459.35 for sale price.
 :::
 
 ## c. Random Forest Tuning
@@ -112,5 +155,36 @@ Now we will vary the tuning parameters of `mtry` and `min.bucket` to see what ef
 -   Hint: If you use the `ranger` package, the `prediction.error` element in the output is the OOB MSE.
 
 ::: {.callout-note title="Solution"}
-Solution here
+```{r}
+mtry_list <- seq(3,25,1)
+bucket_list <- seq(1,6,1)
+
+for (i in mtry_list) {
+  
+  for (b in bucket_list){
+    
+    rf_1 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
+    rf_2 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
+    rf_3 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
+    rf_4 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
+    rf_5 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
+    
+    MSE <- mean(rf_1$prediction.error, rf_1$prediction.error, rf_1$prediction.error, rf_1$prediction.error, rf_1$prediction.error)
+    
+  }
+  print(i)
+}
+```
+
+```{r}
+rf_1 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
+rf_2 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
+
+rf_1$prediction.error
+```
+
+```{r}
+mean1 <- mean(rf_1$prediction.error, rf_1$prediction.error)
+mean1
+```
 :::
