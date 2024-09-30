@@ -35,17 +35,20 @@ Create a single plot that displays each of these quantities as a function of $p_
 ```{r}
 Pm <- seq(0,1,0.01)
 
-Gini <- 1 - (Pm)**2
-Classification <- 1 - (Pm)
-Entropy <- -1*(Pm * log(Pm))
+Pm_other <- 1 - Pm
 
-df <- tibble(Pm, Gini, Classification, Entropy)
+Gini <- 1 - ((Pm)**2 + (Pm_other)**2)
+Misclassification <- 1 - pmax(Pm , Pm_other)
+Entropy <- -1*(Pm * log(Pm) + Pm_other * log(Pm_other))
+
+
+df <- tibble(Pm, Gini, Misclassification, Entropy)
 df <- df %>% mutate_at(1:3, as.numeric)
 df[is.na(df)] <- 0
 
 ggplot(df, aes(x=Pm)) + 
   geom_line(aes(y=Gini, color = 'Gini')) + 
-  geom_line(aes(y=Classification, color = 'Classification')) +
+  geom_line(aes(y=Misclassification, color = 'Misclassification')) +
   geom_line(aes(y=Entropy, color = 'Entropy')) + 
   labs(title = 'Plot', x = 'Pm', y = 'Value')
 ```
@@ -92,11 +95,27 @@ List all of the random forest tuning parameters in the `ranger::ranger()` functi
 Indicate the tuning parameters you think will be most important to optimize?
 
 ::: {.callout-note title="Solution"}
+All tuning parameters in Ranger function:
+
+num.trees
+
+mtry
+
+importance
+
+min.node.size
+
+min.bucket
+
+max.depth
+
+sample.fraction
+
 I think the most important parameters are variety (# of predictors evaluated for each split) and complexity (depth/size of tree, controlled in several ways). The total number of trees when running a bootstrapped random forest is also important, this value should be high.
 :::
 
 ::: {.callout-note title="Solution"}
-Looking at the ranger function, the most important parameters are mtry (# of predictors) and min.obs (min obs in leaf). Since we are dealing with a regression tree, mtry = p/3 and min.obs = 5.
+Looking at the ranger function, the most important parameters are mtry (# of predictors) and min.node.size (minimal node size to split at). Since we are dealing with a regression tree, mtry = p/3 and min.node.size = 5. Min.bucket is also important, it represents the minimal terminal node size.
 :::
 
 ## b. Implement Random Forest
@@ -104,8 +123,6 @@ Looking at the ranger function, the most important parameters are mtry (# of pre
 Use a random forest model to predict the sales price, `Sale_Price`. Use the default parameters and report the 10-fold cross-validation RMSE (square root of mean squared error).
 
 ::: {.callout-note title="Solution"}
-Steps: Define folds,
-
 ```{r}
 ames_df <- ames
 ```
@@ -137,7 +154,7 @@ rmse_list <- unlist(rmse_list)
 mean(rmse_list)
 ```
 
-10 fold CV random forest results in a mean RMSE of 26,459.35 for sale price.
+10 fold CV random forest results in a mean RMSE of 26,413.27 for sale price.
 :::
 
 ## c. Random Forest Tuning
@@ -156,35 +173,54 @@ Now we will vary the tuning parameters of `mtry` and `min.bucket` to see what ef
 
 ::: {.callout-note title="Solution"}
 ```{r}
-mtry_list <- seq(3,25,1)
-bucket_list <- seq(1,6,1)
+set.seed(211)
 
-for (i in mtry_list) {
+mtry_vals <- seq(3,15,1)
+bucket_vals <- seq(1,6,1)
+
+results_df <- data.frame(bucket=integer(), mtry = integer(), MSE=integer())
+
+
+for (i in mtry_vals) {
   
-  for (b in bucket_list){
+  for (b in bucket_vals){
     
-    rf_1 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
-    rf_2 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
-    rf_3 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
-    rf_4 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
-    rf_5 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
+    rf_1 <- ranger(Sale_Price~., num.trees=1000, mtry = i, min.bucket = b, data=ames_df)
+    rf_2 <- ranger(Sale_Price~., num.trees=1000, mtry = i, min.bucket = b, data=ames_df)
+    rf_3 <- ranger(Sale_Price~., num.trees=1000, mtry = i, min.bucket = b, data=ames_df)
+    rf_4 <- ranger(Sale_Price~., num.trees=1000, mtry = i, min.bucket = b, data=ames_df)
+    rf_5 <- ranger(Sale_Price~., num.trees=1000, mtry = i, min.bucket = b, data=ames_df)
+
     
-    MSE <- mean(rf_1$prediction.error, rf_1$prediction.error, rf_1$prediction.error, rf_1$prediction.error, rf_1$prediction.error)
+    MSE <- mean(rf_1$prediction.error, rf_2$prediction.error, rf_3$prediction.error, rf_4$prediction.error, rf_5$prediction.error)
+    
+    new_row <- data.frame(bucket=b, mtry=i, MSE=MSE)
+    
+    results_df <- rbind(results_df, new_row)
     
   }
-  print(i)
+  
 }
 ```
 
 ```{r}
-rf_1 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
-rf_2 <- ranger(Sale_Price~., num.trees=1000, data=ames_df)
-
-rf_1$prediction.error
+results_df
 ```
 
 ```{r}
-mean1 <- mean(rf_1$prediction.error, rf_1$prediction.error)
-mean1
+ggplot(results_df, aes(x=mtry)) + 
+  geom_point(aes(y=MSE, color = bucket)) + 
+  labs(title = 'Plot', x = 'MTRY', y = 'MSE')
+```
+
+```{r}
+
+
 ```
 :::
+
+HW Doubts to Ask:
+
+List all parameters for 2a?
+
+How to set seed for 2c?
