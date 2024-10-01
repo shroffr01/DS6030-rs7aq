@@ -175,10 +175,10 @@ Now we will vary the tuning parameters of `mtry` and `min.bucket` to see what ef
 ```{r}
 set.seed(211)
 
-mtry_vals <- seq(3,15,1)
+mtry_vals <- seq(3,16,1)
 bucket_vals <- seq(1,6,1)
 
-results_df <- data.frame(bucket=integer(), mtry = integer(), MSE=integer())
+results_df <- data.frame(bucket=integer(), mtry = integer(), MSE=numeric())
 
 
 for (i in mtry_vals) {
@@ -192,7 +192,7 @@ for (i in mtry_vals) {
     rf_5 <- ranger(Sale_Price~., num.trees=1000, mtry = i, min.bucket = b, data=ames_df)
 
     
-    MSE <- mean(rf_1$prediction.error, rf_2$prediction.error, rf_3$prediction.error, rf_4$prediction.error, rf_5$prediction.error)
+    MSE <- mean(c(rf_1$prediction.error, rf_2$prediction.error, rf_3$prediction.error, rf_4$prediction.error, rf_5$prediction.error))
     
     new_row <- data.frame(bucket=b, mtry=i, MSE=MSE)
     
@@ -212,15 +212,4 @@ ggplot(results_df, aes(x=mtry)) +
   geom_point(aes(y=MSE, color = bucket)) + 
   labs(title = 'Plot', x = 'MTRY', y = 'MSE')
 ```
-
-```{r}
-
-
-```
 :::
-
-HW Doubts to Ask:
-
-List all parameters for 2a?
-
-How to set seed for 2c?
