@@ -21,7 +21,7 @@ data_dir = 'https://mdporter.github.io/teaching/data/' # data directory
 library(tidyverse)    # functions for data manipulation  
 library(ranger)       # fast random forest implementation
 library(modeldata)    # for the ames housing data
-install.packages('spm')
+#install.packages('spm')
 
 ```
 
