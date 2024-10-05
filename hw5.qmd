@@ -15,7 +15,9 @@ ggplot2::theme_set(ggplot2::theme_bw()) # set ggplot2 theme
 ```{r packages, message=FALSE, warning=FALSE}
 dir_data= 'https://mdporter.github.io/teaching/data/' # data directory
 library(glmnet)
-library(tidyverse) # functions for data manipulation  
+library(tidyverse) # functions for data manipulation 
+library(ranger)       # fast random forest implementation
+
 ```
 
 # Crime Linkage
@@ -111,42 +113,8 @@ Use an elastic net penalty (including lasso and ridge) (your choice).
 
 ::: {.callout-note title="Solution"}
 ```{r}
-# Run analysis to determine what alpha and lambda value results in best performance (first generate training model, and then use test dataset to evaluate)
-
-# finding minimum alpha and lambda based on training data
-alpha <- seq(0,1,0.05)
-
-k <- 10
-folds = rep(1:K, length=nrow(linkage_train))
-
-min_MSE_list <- vector()
-min_lambda_list <- vector()
-
-for (a in 1:length(alpha)){
-  
-x_train <- as.matrix(linkage_train[,-9])
-y_train <- linkage_train$y
-
-rs_train_model <- cv.glmnet(x_train, y_train, family = 'binomial', alpha=alpha[a], foldid = folds)
-
-lambda_min <- rs_train_model$lambda.min
-
-
-min_lambda_index <- which(rs_train_model$lambda == lambda_min)
-min_mse <- rs_train_model$cvm[min_lambda_index]
-
-min_MSE_list[a] <- min_mse
-min_lambda_list[a] <- lambda_min
-
-}
-
-min_MSE_list <- unlist(min_MSE_list)
-c <- which.min(min_MSE_list)
-c
-
-min_lambda_list <- unlist(min_lambda_list)
-d <- min_lambda_list[a]
-d
+linkage_opt_model_log <- glmnet(x_train, y_train, family='binomial', alpha=0, lambda=b)
+linkage_opt_model_log$beta
 ```
 :::
 
@@ -159,7 +127,9 @@ Fit a random forest model to predict crime linkage.
 -   Report the variable importance (indicate which importance method was used).
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+linkage_opt_model_rf <- ranger(y~., num.trees=1000, mtry = 3, data=linkage_train)
+```
 :::
 
 # Problem 3: ROC Curves
