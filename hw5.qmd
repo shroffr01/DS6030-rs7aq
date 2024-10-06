@@ -17,7 +17,7 @@ dir_data= 'https://mdporter.github.io/teaching/data/' # data directory
 library(glmnet)
 library(tidyverse) # functions for data manipulation 
 library(ranger)       # fast random forest implementation
-
+library('pROC')
 ```
 
 # Crime Linkage
@@ -60,7 +60,7 @@ Use an elastic net penalty (including lasso and ridge) (your choice).
 alpha <- seq(0,1,0.05)
 
 k <- 10
-folds = rep(1:K, length=nrow(linkage_train))
+folds = rep(1:k, length=nrow(linkage_train))
 
 min_MSE_list <- vector()
 min_lambda_list <- vector()
@@ -100,6 +100,10 @@ The best performance corresponds to an alpha value of 0 and a lambda of 0.0023.
 # Fitting lm model
 linkage_opt_model <- glmnet(x_train, y_train, alpha=0, lambda=b)
 linkage_opt_model$beta
+```
+
+```{r}
+linkage_opt_model$nobs
 ```
 :::
 
@@ -142,7 +146,39 @@ Also report the AUC (area under the ROC curve) for each model. Again, use the *t
 -   Note: you should be weary of being asked to evaluation predictive performance from the same data used to estimate the tuning and model parameters. The next problem will walk you through a more proper way of evaluating predictive performance with resampling.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+# Generate training data predictions
+linkage_train_mat <- as.matrix(linkage_train[,-9])
+
+predictions_lin <- predict(linkage_opt_model, linkage_train_mat, type = 'response')
+predictions_log <- predict(linkage_opt_model_log, linkage_train_mat, type = 'response')
+predictions_rf <- predict(linkage_opt_model_rf, linkage_train_mat, type = 'response')
+```
+
+```{r}
+class(predictions_lin)
+```
+
+```{r}
+roc_lin <- roc(linkage_train[,9], predictions_lin)
+roc_log <- roc(linkage_train[,9], predictions_log)
+roc_rf <- roc(linkage_train[,9], predictions_rf$predictions)
+```
+
+```{r}
+roc_lin_data <- data.frame(FPR = roc_lin$specificities, TPR = roc_lin$sensitivities, model = 'Linear model')
+roc_log_data <- data.frame(FPR = roc_log$specificities, TPR = roc_log$sensitivities, model = 'Logistic model')
+roc_rf_data <- data.frame(FPR = roc_rf$specificities, TPR = roc_rf$sensitivities, model = 'Random Forest model')
+
+roc_df <- rbind(roc_lin_data, roc_log_data, roc_rf_data)
+roc_df
+```
+
+```{r}
+ggplot(roc_df, aes(x=FPR)) + 
+  geom_line(aes(y=TPR, color = model)) + 
+  labs(title = 'Plot', x = 'FPR', y = 'TPR')
+```
 :::
 
 ## b. ROC curve: resampling estimate
