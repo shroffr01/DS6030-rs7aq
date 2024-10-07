@@ -158,6 +158,10 @@ predictions_rf <- predict(linkage_opt_model_rf, linkage_train_mat, type = 'respo
 ```
 
 ```{r}
+linkage_train_mat
+```
+
+```{r}
 predictions_lin <- as.numeric(predictions_lin)
 predictions_log <- as.numeric(predictions_log)
 predictions_rf <- as.numeric(predictions_rf$predictions)
@@ -167,10 +171,6 @@ predictions_rf <- as.numeric(predictions_rf$predictions)
 roc_lin <- roc(linkage_train[,9], predictions_lin)
 roc_log <- roc(linkage_train[,9], predictions_log)
 roc_rf <- roc(linkage_train[,9], predictions_rf)
-```
-
-```{r}
-roc_rf
 ```
 
 ```{r}
@@ -345,7 +345,11 @@ Predict the estimated *probability* of linkage for the test data (using any mode
     $$ where $M$ is the number of test observations, $\hat{p}_i$ is the prediction for the $i$th test observation, and $y_i \in \{0,1\}$ are the true test set labels.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+p <- predict(linkage_opt_model_rf, linkage_test, type = 'response')
+
+write.csv(p$predictions, "C:/Users/shrof/R/UVA/DS6030-rs7aq/Shroff_Rohan1.csv", row.names=TRUE)
+```
 :::
 
 ## b. Contest Part 2: Predict the *linkage label*.
@@ -359,5 +363,10 @@ Predict the linkages for the test data (using any model).
 -   You will receive credit for a proper submission; the top five scores will receive 2 bonus points. Note: you only will get bonus credit for one of the two contests.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+p1 <- predict(linkage_opt_model_rf, linkage_test, type='response')
+p1_class <- ifelse(p1$predictions > 0.5, 1, 0)
+
+write.csv(p1_class, "C:/Users/shrof/R/UVA/DS6030-rs7aq/Shroff_Rohan2.csv", row.names=FALSE)
+```
 :::
