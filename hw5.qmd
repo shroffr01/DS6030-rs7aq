@@ -156,19 +156,21 @@ predictions_rf <- predict(linkage_opt_model_rf, linkage_train_mat, type = 'respo
 ```
 
 ```{r}
-class(predictions_lin)
+predictions_lin <- as.numeric(predictions_lin)
+predictions_log <- as.numeric(predictions_log)
+predictions_rf <- as.numeric(predictions_rf$predictions)
 ```
 
 ```{r}
 roc_lin <- roc(linkage_train[,9], predictions_lin)
 roc_log <- roc(linkage_train[,9], predictions_log)
-roc_rf <- roc(linkage_train[,9], predictions_rf$predictions)
+roc_rf <- roc(linkage_train[,9], predictions_rf)
 ```
 
 ```{r}
-roc_lin_data <- data.frame(FPR = roc_lin$specificities, TPR = roc_lin$sensitivities, model = 'Linear model')
-roc_log_data <- data.frame(FPR = roc_log$specificities, TPR = roc_log$sensitivities, model = 'Logistic model')
-roc_rf_data <- data.frame(FPR = roc_rf$specificities, TPR = roc_rf$sensitivities, model = 'Random Forest model')
+roc_lin_data <- data.frame(FPR = (1-roc_lin$specificities), TPR = roc_lin$sensitivities, model = 'Linear model')
+roc_log_data <- data.frame(FPR = (1-roc_log$specificities), TPR = roc_log$sensitivities, model = 'Logistic model')
+roc_rf_data <- data.frame(FPR = (1-roc_rf$specificities), TPR = roc_rf$sensitivities, model = 'Random Forest model')
 
 roc_df <- rbind(roc_lin_data, roc_log_data, roc_rf_data)
 roc_df
@@ -178,6 +180,12 @@ roc_df
 ggplot(roc_df, aes(x=FPR)) + 
   geom_line(aes(y=TPR, color = model)) + 
   labs(title = 'Plot', x = 'FPR', y = 'TPR')
+```
+
+```{r}
+print(roc_lin$auc) # linear
+print(roc_log$auc) # logistic
+print(roc_rf$auc) # random forest
 ```
 :::
 
@@ -197,7 +205,57 @@ Recreate the ROC curve from the penalized logistic regression (logreg) and rando
 -   Note: by estimating $\lambda$ each iteration, we are incorporating the uncertainty present in estimating that tuning parameter.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+K <- 10
+folds = rep(1:K, length=nrow(linkage_train)-500)
+
+hold_out_labels <- list()
+predictions_log_list <- list()
+
+auc_log_list <- list()
+auc_rf_list <- list()
+
+for (i in (1:2)){
+   hold_out <- sample(1:nrow(linkage_train), 500, replace=FALSE)
+   
+   linkage_train_modified <- linkage_train[-hold_out, ]
+     
+    x_train <- as.matrix(linkage_train_modified[,-9])
+    y_train <- linkage_train_modified[,9]
+    
+    # logistic regression model 
+    linkage_holdout_model_log <- cv.glmnet(x_train, y_train, family='binomial', alpha=0.75, foldid=folds)
+    
+    lambda_min <- linkage_holdout_model_log$lambda.min
+    
+    x_test <- as.matrix(linkage_train[hold_out,-9])
+    
+    yhat_lambda_min_log = predict(linkage_holdout_model_log, x_test, type = 'response', s = "lambda.min")
+    predictions_log <- as.numeric(yhat_lambda_min_log)
+    
+    roc_log <- roc(linkage_train[hold_out, 9], predictions_log)
+    roc_log_auc <- roc_log$auc
+    
+    hold_out_labels[[i]] <- hold_out
+    predictions_log_list[[i]] <- predictions_log
+    auc_log_list[i] <- roc_log_auc
+    
+    # random forest model 
+    linkage_holdout_model_rf <- ranger(y~., num.trees=1000, mtry = 2, data=linkage_train_modified)
+    
+    x_test_rf <- as.matrix(linkage_train[hold_out,-9])
+    
+    predictions_rf <- predict(linkage_opt_model_rf, x_test_rf, type = 'response')
+    predictions_rf <- as.numeric(predictions_rf$predictions)
+    
+    roc_rf <- roc(linkage_train[hold_out, 9], predictions_rf)
+    roc_rf_auc <- roc_rf$auc
+    
+    auc_rf_list[i] <- roc_rf_auc
+
+}
+ 
+```
 :::
 
 # Problem 4: Contest
