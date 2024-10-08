@@ -158,10 +158,6 @@ predictions_rf <- predict(linkage_opt_model_rf, linkage_train_mat, type = 'respo
 ```
 
 ```{r}
-linkage_train_mat
-```
-
-```{r}
 predictions_lin <- as.numeric(predictions_lin)
 predictions_log <- as.numeric(predictions_log)
 predictions_rf <- as.numeric(predictions_rf$predictions)
