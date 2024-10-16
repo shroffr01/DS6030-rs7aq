@@ -40,6 +40,10 @@ These problems use the [linkage-train](%60r%20file.path(dir_data,%20%22linkage_t
 linkage_train <- read.csv('linkage_train.csv')
 linkage_test <- read.csv('linkage_test.csv')
 ```
+
+```{r}
+linkage_train
+```
 :::
 
 # Problem 1: Penalized Regression for Crime Linkage
@@ -175,7 +179,6 @@ roc_log_data <- data.frame(FPR = (1-roc_log$specificities), TPR = roc_log$sensit
 roc_rf_data <- data.frame(FPR = (1-roc_rf$specificities), TPR = roc_rf$sensitivities, model = 'Random Forest model')
 
 roc_df <- rbind(roc_lin_data, roc_log_data, roc_rf_data)
-roc_df
 ```
 
 ```{r}
@@ -261,11 +264,11 @@ for (i in (1:25)){
     
     # random forest model 
     
-    linkage_holdout_model_rf <- ranger(y~., num.trees=1000, mtry = 2, data=linkage_train_modified)
+    linkage_holdout_model_rf <- ranger(x=linkage_train_modified[,-9],y=linkage_train_modified[,9], num.trees=1000, mtry = 2)
     
     x_test_rf <- as.matrix(linkage_train[hold_out,-9])
     
-    predictions_rf <- predict(linkage_opt_model_rf, x_test_rf, type = 'response')
+    predictions_rf <- predict(linkage_holdout_model_rf, x_test_rf, type = 'response')
     predictions_rf <- as.numeric(predictions_rf$predictions)
     
     # Generating roc 
@@ -302,17 +305,14 @@ print(sd(auc_rf_list)/sqrt(length(auc_rf_list)))
 ```
 
 ```{r}
-results_df_log
-```
-
-```{r}
 # ROC curve for Logistic model
 
 results_df_log$label <- as.factor(results_df_log$label)
 
 ggplot(results_df_log, aes(x=FPR)) + 
   geom_line(aes(y=TPR, color = label)) + 
-  labs(title = 'Plot', x = 'FPR', y = 'TPR')
+  geom_abline(slope=1, intercept=0, linetype='dashed', color='black') +
+  labs(title = 'ROC Curve Logistic Regression', x = 'FPR', y = 'TPR')
 ```
 
 ```{r}
@@ -322,7 +322,8 @@ results_df_rf$label <- as.factor(results_df_rf$label)
 
 ggplot(results_df_rf, aes(x=FPR)) + 
   geom_line(aes(y=TPR, color = label)) + 
-  labs(title = 'Plot', x = 'FPR', y = 'TPR')
+  geom_abline(slope=1, intercept=0, linetype='dashed', color='black') +
+  labs(title = 'ROC Curve Random Forest', x = 'FPR', y = 'TPR')
 ```
 :::
 
@@ -361,7 +362,7 @@ Predict the linkages for the test data (using any model).
 ::: {.callout-note title="Solution"}
 ```{r}
 p1 <- predict(linkage_opt_model_rf, linkage_test, type='response')
-p1_class <- ifelse(p1$predictions > 0.5, 1, 0)
+p1_class <- ifelse(p1$predictions > 0.15, 1, 0)
 
 write.csv(p1_class, "C:/Users/shrof/R/UVA/DS6030-rs7aq/Shroff_Rohan2.csv", row.names=FALSE)
 ```
