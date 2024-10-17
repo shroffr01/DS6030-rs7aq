@@ -154,7 +154,67 @@ Use the raw COMPAS risk scores to make a ROC curve for each race.
 -   Are the ROC curves helpful in evaluating the COMPAS risk score?
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+
+risk_pred['predictions_class'] <- ifelse(risk_pred$predictions > 0.30, 1, 0)
+
+roc_AA <- risk_pred %>%
+  filter(race == 'African-American')
+
+roc_curve_AA <- roc(roc_AA[,'outcome'], roc_AA[,'predictions_class'])
+
+roc_Asian <- risk_pred %>%
+  filter(race == 'Asian')
+
+roc_curve_A <- roc(roc_Asian[,'outcome'], roc_Asian[,'predictions_class'])
+
+roc_C <- risk_pred %>%
+  filter(race == 'Caucasian')
+
+roc_curve_C <- roc(roc_C[,'outcome'], roc_C[,'predictions_class'])
+
+roc_H <- risk_pred %>%
+  filter(race == 'Hispanic')
+
+roc_curve_H <- roc(roc_H[,'outcome'], roc_H[,'predictions_class'])
+
+roc_NA <- risk_pred %>%
+  filter(race == 'Native American')
+
+roc_curve_NA <- roc(roc_NA[,'outcome'], roc_NA[,'predictions_class'])
+
+roc_O <- risk_pred %>%
+  filter(race == 'Other')
+
+roc_curve_O <- roc(roc_O[,'outcome'], roc_O[,'predictions_class'])
+
+
+
+```
+
+```{r}
+roc_AA_data <- data.frame(FPR = (1-roc_curve_AA$specificities), TPR = roc_curve_AA$sensitivities, model = 'African-American')
+
+roc_A_data <- data.frame(FPR = (1-roc_curve_A$specificities), TPR = roc_curve_A$sensitivities, model = 'Asian')
+
+roc_C_data <- data.frame(FPR = (1-roc_curve_C$specificities), TPR = roc_curve_C$sensitivities, model = 'Caucasian')
+
+roc_H_data <- data.frame(FPR = (1-roc_curve_H$specificities), TPR = roc_curve_H$sensitivities, model = 'Hispanic')
+
+roc_NA_data <- data.frame(FPR = (1-roc_curve_NA$specificities), TPR = roc_curve_NA$sensitivities, model = 'Native American')
+
+roc_O_data <- data.frame(FPR = (1-roc_curve_O$specificities), TPR = roc_curve_O$sensitivities, model = 'Other')
+```
+
+```{r}
+roc_df_comb <- rbind(roc_AA_data, roc_A_data, roc_C_data, roc_H_data, roc_NA_data, roc_O_data)
+```
+
+```{r}
+ggplot(roc_df_comb, aes(x=FPR)) + 
+  geom_line(aes(y=TPR, color = model)) + 
+  labs(title = 'Plot', x = 'FPR', y = 'TPR')
+```
 :::
 
 # Problem 2: Support Vector Machines (SVM)
