@@ -1,0 +1,167 @@
+---
+title: "Homework #7: Stacking and Boosting" 
+author: "**Rohan Shroff**"
+format: ds6030hw-html
+---
+
+```{r config, include=FALSE}
+# Set global configurations and settings here
+knitr::opts_chunk$set()                 # set global chunk options
+ggplot2::theme_set(ggplot2::theme_bw()) # set ggplot2 theme
+library(ranger)
+library(dplyr)
+library(tidyverse)
+library(caret)
+```
+
+# Stacking for Kaggle
+
+You are to make at least one official entry in the [House Prices: Advanced Regression Techniques](https://www.kaggle.com/c/house-prices-advanced-regression-techniques/overview) Kaggle contest **using stacking or model averaging**; at least one component model must be a boosting model.
+
+-   You will need to register in Kaggle (its free)
+-   Read the details of the contest. Understand the data and evaluation function.
+-   Make at least one submission that uses **stacking or model averaging**.
+-   If you get a score on the public leaderboard of $\text{RMSE}<0.50$ (note RMSE is calculated on the log scale), you receive full credit, otherwise, you'll lose 10 points.
+    -   I'll allow [teaming](https://www.kaggle.com/c/house-prices-advanced-regression-techniques/team). Each team member can produce one component model and then use stacking or model averaging to combine predictions.
+    -   You don't need to team, but must still combine multiple models. At least one of the component models should be boosting.
+-   Each person submit the following in Canvas:
+    -   Code (if teaming, your code and the shared stacking code)
+    -   kaggle name (or team name) so we can ensure you had a valid submission.
+    -   your score and current ranking on the kaggle leaderboard
+-   Top 5 scores get 2 bonus points
+    -   Teams will split their bonus points among team members
+
+Note: Check out the [Kaggle notebooks](https://www.kaggle.com/docs/notebooks) which let you make submissions directly from the notebook. Its very similar to using Rivanna's OnDemand in that you can make a RMarkdown/Jupyter notebook or R/Python scrips that run on the cloud. Free CPU (4 cores, 30GB RAM) - amazing! Let your laptops cool off after all their hard work this semester.
+
+```{r}
+df_train <- read.csv('train.csv')
+df_test <- read.csv('test.csv')
+
+# columns to omit 
+df_train <- df_train %>% select(-MiscFeature, -PoolQC)
+df_test <- df_test %>% select(-MiscFeature, -PoolQC)
+df_test
+```
+
+```{r}
+df_train <-  df_train %>%
+  mutate(across(where(is.character), ~ replace_na(., "missing")))
+
+df_test <-  df_test %>%
+  mutate(across(where(is.character), ~ replace_na(., "missing")))
+```
+
+```{r}
+
+```
+
+```{r}
+# replace missing int values with mean of column
+
+df_train <- df_train %>%
+  mutate(across(where(is.numeric), ~ replace_na(., round(mean(.,na.rm=TRUE)))))
+
+df_test <- df_test %>%
+  mutate(across(where(is.numeric), ~ replace_na(., round(mean(.,na.rm=TRUE)))))
+```
+
+```{r}
+# hot encode all categorical columns
+
+dmy <- dummyVars(" ~ .", data = df_train)
+df_train_mod <- data.frame(predict(dmy, newdata = df_train))
+
+df_train_int <- df_train %>% select(where(is.numeric))
+df_train_int
+
+dmy <- dummyVars(" ~ .", data = df_test)
+df_test_mod <- data.frame(predict(dmy, newdata = df_test))
+
+df_test_int <- df_test %>% select(where(is.numeric))
+df_test_int
+```
+
+```{r}
+# fitting random forest model
+
+rf_model <- ranger(SalePrice~., data = df_train_int)
+rf_model$prediction.error
+```
+
+```{r}
+lin_model <- lm(SalePrice~., data=df_train_int)
+predicted_values <- predict(lin_model, df_train_int)
+mse <- mean((df_train_int$SalePrice - predicted_values)^2)
+mse
+```
+
+```{r}
+# lasso regression model
+
+x_train <- as.matrix(df_train_int[,-38])
+y_train <- df_train_mod$SalePrice
+
+lasso_model <- glmnet(x_train, y_train, alpha=0.7, lambda=0.2)
+predicted_values <- predict(lasso_model, x_train)
+mse <- mean((df_train_int$SalePrice - predicted_values)^2)
+mse
+```
+
+```{r}
+# Generate predictions based on test data for each model 
+
+rf_pred = predict(rf_model, data = df_test_int) # random forest
+lin_pred = predict(lin_model, data = df_test_int) # lin reg
+
+x_test <- as.matrix(df_test_int)
+lasso_pred = predict(lasso_model, newx = x_test) # lasso 
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+setdiff(names(df_train_mod), names(df_test_mod))
+
+```
+
+```{r}
+df_test_int
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```

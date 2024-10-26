@@ -14,7 +14,9 @@ ggplot2::theme_set(ggplot2::theme_bw()) # set ggplot2 theme
 
 ```{r packages, message=FALSE, warning=FALSE}
 dir_data= 'https://mdporter.github.io/teaching/data/' # data directory
-library(tidyverse)  # functions for data manipulation  
+library(tidyverse)  # functions for data manipulation 
+library(ranger)
+library(pROC)
 ```
 
 # COMPAS Recidivism Prediction
@@ -45,10 +47,6 @@ risk = df %>%
   )
 ```
 
-```{r}
-risk
-```
-
 The `risk` data frame has the relevant information for completing the problems.
 
 # Problem 1: COMPAS risk score
@@ -69,7 +67,7 @@ Indicate the choices you made in estimation (e.g., state the prior if you used B
 For this analysis, I used normal theory to make my confidence intervals. I also use a random forest model.
 
 ```{r}
-risk_rf <- ranger(outcome~., num.trees=1000, probability = TRUE, data=risk) 
+risk_rf <- ranger(outcome~score, num.trees=1000, probability = TRUE, data=risk) 
 ```
 
 ```{r}
@@ -77,7 +75,7 @@ predictions <-  risk_rf$predictions[,2]
 predictions1 <- data.frame(predictions)
 
 risk_pred = cbind(risk, predictions1)
-risk_pred
+head(risk_pred, 10)
 ```
 
 ```{r}
@@ -117,7 +115,7 @@ ggplot(data = risk_grouped, aes(x=score, y = percent)) +
   labs(title = 'Risk Scores and Corresponding Prob of Recidivism', x = 'Score', y = 'Prob. of Recidivism')
 ```
 
-In general, we can see that
+In general, we can see that as the score of an individual increases, the forecasted probability of them recidivizing goes up.
 :::
 
 ## c. Risk Score and Probability (by race)
@@ -144,6 +142,8 @@ ggplot(data = risk_grouped_race, aes(x=score, y = percent)) +
   scale_x_continuous(breaks=1:10) +
   labs(title = 'Risk Scores vs Prob of Recidivism By Race', x = 'Score', y = 'Prob. of Recidivism')
 ```
+
+From the plots we can see that data is sparse for Asians and Native Americans. Another strange observation that may be due to insufficient sample size is that most racial groups are assigned a lower probability of recidivizing when they have a score of 10 compared to 9.
 :::
 
 ## d. ROC Curves
@@ -156,7 +156,7 @@ Use the raw COMPAS risk scores to make a ROC curve for each race.
 ::: {.callout-note title="Solution"}
 ```{r}
 
-risk_pred['predictions_class'] <- ifelse(risk_pred$predictions > 0.30, 1, 0)
+risk_pred['predictions_class'] <- ifelse(risk_pred$predictions > 0.20, 1, 0)
 
 roc_AA <- risk_pred %>%
   filter(race == 'African-American')
@@ -215,6 +215,8 @@ ggplot(roc_df_comb, aes(x=FPR)) +
   geom_line(aes(y=TPR, color = model)) + 
   labs(title = 'Plot', x = 'FPR', y = 'TPR')
 ```
+
+From the ROC curve, it becomes apparent that my random forest model performs best for Native Americans and is the worst for Caucasian and Hispanics. This result is very surprising because Native Americans were the smallest sample size. I also think that the ROC curves are not too helpful in evaluating the COMPAS risk scores because the ROC curves simply show the TPR when a certain FPR is chosen by a threshold value. A better way to evaluate compass score would be to do a linear regression of score and the percent of people that recidivized.
 :::
 
 # Problem 2: Support Vector Machines (SVM)
