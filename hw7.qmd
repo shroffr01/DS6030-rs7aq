@@ -12,6 +12,7 @@ library(ranger)
 library(dplyr)
 library(tidyverse)
 library(caret)
+library(glmnet)
 ```
 
 # Stacking for Kaggle
@@ -40,7 +41,6 @@ df_test <- read.csv('test.csv')
 # columns to omit 
 df_train <- df_train %>% select(-MiscFeature, -PoolQC)
 df_test <- df_test %>% select(-MiscFeature, -PoolQC)
-df_test
 ```
 
 ```{r}
@@ -52,7 +52,7 @@ df_test <-  df_test %>%
 ```
 
 ```{r}
-
+df_train$SalePrice <- log(df_train$SalePrice)
 ```
 
 ```{r}
@@ -84,13 +84,13 @@ df_test_int
 ```{r}
 # fitting random forest model
 
-rf_model <- ranger(SalePrice~., data = df_train_int)
+rf_model <- ranger(SalePrice~., data = df_train_mod)
 rf_model$prediction.error
 ```
 
 ```{r}
-lin_model <- lm(SalePrice~., data=df_train_int)
-predicted_values <- predict(lin_model, df_train_int)
+lin_model <- lm(SalePrice~., data=df_train_mod)
+predicted_values <- predict(lin_model, df_train_mod)
 mse <- mean((df_train_int$SalePrice - predicted_values)^2)
 mse
 ```
@@ -98,31 +98,36 @@ mse
 ```{r}
 # lasso regression model
 
-x_train <- as.matrix(df_train_int[,-38])
+x_train <- as.matrix(df_train_mod[,-38])
 y_train <- df_train_mod$SalePrice
 
-lasso_model <- glmnet(x_train, y_train, alpha=0.7, lambda=0.2)
+lasso_model <- glmnet(x_train, y_train, alpha=0.7, lambda=0)
 predicted_values <- predict(lasso_model, x_train)
-mse <- mean((df_train_int$SalePrice - predicted_values)^2)
+mse <- mean((df_train_mod$SalePrice - predicted_values)^2)
 mse
+```
+
+```{r}
+# XG Boost model
+
 ```
 
 ```{r}
 # Generate predictions based on test data for each model 
 
-rf_pred = predict(rf_model, data = df_test_int) # random forest
-lin_pred = predict(lin_model, data = df_test_int) # lin reg
+rf_pred = predict(rf_model, data = df_test_mod) # random forest
+lin_pred = predict(lin_model, data = df_test_mod) # lin reg
 
-x_test <- as.matrix(df_test_int)
+x_test <- as.matrix(df_test_mod)
 lasso_pred = predict(lasso_model, newx = x_test) # lasso 
 ```
 
 ```{r}
-
+1178297662**0.5
 ```
 
 ```{r}
-
+0.02**0.5
 ```
 
 ```{r}
