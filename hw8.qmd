@@ -21,6 +21,8 @@ data_url = "https://archive.ics.uci.edu/static/public/275/bike+sharing+dataset.z
 library(tidyverse)
 library(dplyr)
 library(lubridate)
+library(lightgbm)
+library(recipes)
 ```
 
 # Problem 1: Bike Sharing Data
@@ -72,27 +74,21 @@ This may not be perfect, but do the following to account for missing times:
 ::: {.callout-note title="Solution"}
 ```{r}
 df$datetime <- as.POSIXct(paste(df$dteday, df$hr), format="%Y-%m-%d %H")
-df
 ```
 
 ```{r}
-# full_sequence <- seq(from = floor_date(min(df$datetime), "hour"),
-#                      to = ceiling_date(max(df$datetime), "hour"),
-#                      by = "hour")
-# 
-# missing_hours <- setdiff(full_sequence, df$datetime)
-# missing_hours_readable <- as.POSIXct(missing_hours, origin = "1970-01-01", tz = "EST")
-# df_time <- data.frame(missing_hours_readable)
-# 
-# filtered_df_time <- df_time %>% filter(missing_hours_readable != "2011-03-15 03:00:00 EST" & missing_hours_readable != "2011-11-06 01:00:00 EST")
-# 
-# filtered_df_time
+df_full <- df %>%
+  complete(datetime = seq(min(datetime), max(datetime), by = "hour")) %>%
+  replace_na(list(casual = 0, registered = 0, cnt = 0))
+
+df_full <- df_full %>% filter(datetime != "2011-03-15 03:00:00 EST")
+
+df_full <- df_full %>% 
+  fill(everything(), .direction = "down")
 ```
 
 ```{r}
-df_merge <- rbind(df, filtered_df_time)
-df_merge <- df_merge[order(df_merge$datetime_col), ]
-
+df_full['datetime']
 ```
 :::
 
@@ -106,10 +102,19 @@ df_merge <- df_merge[order(df_merge$datetime_col), ]
 Hints:
 
 -   The `lubridate` package (part of `tidymodels`) is useful for dealing with dates and times.
--   `dplyr::lag()` can help with making the lagged variables.
+-   `dplyr::lag()` can help with making the lagged variables.lt
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+df_full['doy'] <- yday(as.POSIXct(df_full$datetime))
+df_full['days'] <- round(df_full['doy'] + (df_full['hr']/24), 3)
+
+df_full['cnt_ar'] <- lag(df_full$cnt, n = 1L)
+df_full$cnt_ar[1] <- 140 # median of cnt_ar column
+
+df_full['cnt_ar_24'] <- lag(df_full$cnt, n = 24L)
+df_full$cnt_ar_24[c(1:24)] <- 140 # median of cnt_ar column
+```
 :::
 
 ## e. Train-Test split
@@ -117,7 +122,11 @@ Add solution here
 Randomly select 1000 observations for the test set and use the remaining for training.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+rand_numbers <- round(runif(n=1000, min=1, max=17543), 0)
+df_test <- df_full[c(rand_numbers),]
+df_train <- df_full[-c(rand_numbers),]
+```
 :::
 
 # Problem 2: Predicting bike rentals
@@ -130,7 +139,15 @@ The outcome variables, number of renters, are counts (i.e., non-negative integer
 -   Page 12 of the [Taylor Expansion notes](lectures/taylor-expansion.pdf) shows that each new iteration of boosting attempts to find the tree that minimizes $\sum_i w_i (z_i - \hat{f}(x_i))^2$. What are the values for $w_i$ and $z_i$ for the "poisson" objective (in terms of $\hat{\lambda}_i$ *or* $e^{\hat{F}_i}$).
 
 ::: {.callout-note title="Solution"}
-Add solution here
+Gradient: -yi + e\^Fi
+
+Hessian: e\^Fi
+
+Wi = weight
+
+f(x) = model
+
+**REVISIT**
 :::
 
 ## b. LightGBM Tuning
@@ -148,8 +165,81 @@ i.  List relevant tuning parameter values, even those left at their default valu
 ii. Indicate what method was used for tuning (e.g., type of cross-validation).
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+df_train <- df_train[, c('season', 'yr', 'mnth', 'hr', 'holiday', 'weekday', 'workingday', 'weathersit', 'temp', 'atemp', 'hum', 'windspeed', 'doy', 'days', 'cnt_ar', 'cnt_ar_24', 'cnt')]
+df_test <- df_test[, c('season', 'yr', 'mnth', 'hr', 'holiday', 'weekday', 'workingday', 'weathersit', 'temp', 'atemp', 'hum', 'windspeed', 'doy', 'days', 'cnt_ar', 'cnt_ar_24', 'cnt')]
+```
+
+```{r}
+rec_lgbm = recipe(cnt ~ ., data = df_train) %>%
+  step_integer(all_nominal_predictors(), zero_based = TRUE) %>%
+  step_integer(cnt, zero_based = TRUE) %>%
+  prep()
+
+X = bake(rec_lgbm, new_data = NULL, composition = "matrix",all_predictors())
+
+lgbm_data =lgb.Dataset(data = X,colnames = colnames(X),label = bake(rec_lgbm,new_data = NULL, all_outcomes()) %>% pull())
+
+lgbm_tuning = list(objective = "poisson",num_class = 1,nrounds = 100,min_gain_to_split = 1,learning_rate = 0.1,max_depth = 2,bagging_freq = 1,bagging_fraction = 0.8, bagging_seed = 123)
+
+lgbm = lightgbm(data = lgbm_data, params = lgbm_tuning, verbose = -1)
+
+predict(lgbm, X) %>% head()
+```
+
+```{r}
+nrounds <- seq(100, 200, 50)
+tree_depth <- seq(25,35,1)
+
+df_rmse <- data.frame(nrounds = integer(), tree_depth = integer(), rmse = numeric())
+
+
+rec_lgbm = recipe(cnt ~ ., data = df_train) %>%
+  step_integer(all_nominal_predictors(), zero_based = TRUE) %>%
+  step_integer(cnt, zero_based = TRUE) %>%
+  prep()
+
+X = bake(rec_lgbm, new_data = NULL, composition = "matrix",all_predictors())
+
+lgbm_data =lgb.Dataset(data = X,colnames = colnames(X),label = bake(rec_lgbm,new_data = NULL, all_outcomes()) %>% pull())
+
+cv_rmse <- list()
+
+for (i in nrounds){
+  print(i)
+  for (j in tree_depth){
+    print(j)
+    lgbm_tuning = list(objective = "poisson",
+                       num_class = 1,
+                       nrounds = i,
+                       min_gain_to_split = 1,
+                       learning_rate = 0.1,
+                       max_depth = j,
+                       bagging_freq = 1,
+                       bagging_fraction = 0.8,
+                       bagging_seed = 123)
+    
+    lgbm = lgb.cv(data = lgbm_data, params = lgbm_tuning, nfold = 3, eval = 'rmse',verbose=-1)
+    
+
+    rmse_value <- lgbm$record_evals$valid$rmse$eval
+    last_rmse_value <- tail(rmse_value, 1)
+    
+    a = data.frame(nrounds=i, tree_deth=j, rmse=last_rmse_value)
+    
+    df_rmse <- rbind(df_rmse, a)
+    print('hi')
+  }
+  
+}
+```
 :::
+
+```{r}
+lgbm$record_evals$valid$rmse$eval[600]
+```
+
+Method used for tuning was n fold cross validation.
 
 ## c. Evaluation
 
