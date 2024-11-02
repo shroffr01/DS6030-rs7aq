@@ -35,6 +35,8 @@ You are to make at least one official entry in the [House Prices: Advanced Regre
 
 Note: Check out the [Kaggle notebooks](https://www.kaggle.com/docs/notebooks) which let you make submissions directly from the notebook. Its very similar to using Rivanna's OnDemand in that you can make a RMarkdown/Jupyter notebook or R/Python scrips that run on the cloud. Free CPU (4 cores, 30GB RAM) - amazing! Let your laptops cool off after all their hard work this semester.
 
+**Kaggle Name: FirstinWeather, score: 0.13622, 1486/4940**
+
 **Data Import and Cleaning**
 
 ```{r}
@@ -179,11 +181,11 @@ pred_final1 <- exp(pred_final1)
 ```
 
 ```{r}
-write.csv(pred_final, "C:/Users/shrof/R/UVA/DS6030-rs7aq/submission.csv")
+#write.csv(pred_final, "C:/Users/shrof/R/UVA/DS6030-rs7aq/submission.csv")
 ```
 
 ```{r}
-write.csv(pred_final1, "C:/Users/shrof/R/UVA/DS6030-rs7aq/submission3.csv")
+#write.csv(pred_final1, "C:/Users/shrof/R/UVA/DS6030-rs7aq/submission3.csv")
 ```
 
 ```{r}
