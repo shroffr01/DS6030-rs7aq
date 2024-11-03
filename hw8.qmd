@@ -167,75 +167,63 @@ df_test <- df_test[, c('season', 'yr', 'mnth', 'hr', 'holiday', 'weekday', 'work
 ```
 
 ```{r}
-rec_lgbm = recipe(cnt ~ ., data = df_train) %>%
-  step_integer(all_nominal_predictors(), zero_based = TRUE) %>%
-  step_integer(cnt, zero_based = TRUE) %>%
-  prep()
-
-X = bake(rec_lgbm, new_data = NULL, composition = "matrix",all_predictors())
-
-lgbm_data =lgb.Dataset(data = X,colnames = colnames(X),label = bake(rec_lgbm,new_data = NULL, all_outcomes()) %>% pull())
-
-lgbm_tuning = list(objective = "poisson",num_class = 1,nrounds = 100,min_gain_to_split = 1,learning_rate = 0.1,max_depth = 2,bagging_freq = 1,bagging_fraction = 0.8, bagging_seed = 123)
-
-lgbm = lightgbm(data = lgbm_data, params = lgbm_tuning, verbose = -1)
-
-predict(lgbm, X) %>% head()
-```
-
-```{r}
-nrounds <- seq(100, 500, 50)
-tree_depth <- seq(2,10,1)
-
-df_rmse <- data.frame(nrounds = integer(), tree_depth = integer(), rmse = numeric())
-
-
-rec_lgbm = recipe(cnt ~ ., data = df_train) %>%
-  step_integer(all_nominal_predictors(), zero_based = TRUE) %>%
-  step_integer(cnt, zero_based = TRUE) %>%
-  prep()
-
-X = bake(rec_lgbm, new_data = NULL, composition = "matrix",all_predictors())
-
-lgbm_data =lgb.Dataset(data = X,colnames = colnames(X),label = bake(rec_lgbm,new_data = NULL, all_outcomes()) %>% pull())
-
-cv_rmse <- list()
-
-for (i in nrounds){
-  #print(i)
-  for (j in tree_depth){
-    #print(j)
-    lgbm_tuning = list(objective = "poisson",
-                       num_class = 1,
-                       nrounds = i,
-                       min_gain_to_split = 1,
-                       learning_rate = 0.1,
-                       max_depth = j,
-                       bagging_freq = 1,
-                       bagging_fraction = 0.8,
-                       bagging_seed = 123)
-    
-    lgbm = lgb.cv(data = lgbm_data, params = lgbm_tuning, nfold = 3, eval = 'rmse',verbose=-1)
-    
-
-    rmse_value <- lgbm$record_evals$valid$rmse$eval
-    last_rmse_value <- tail(rmse_value, 1)
-
-    a <-  data.frame(nrounds=i, tree_deth=j, rmse=last_rmse_value)
-    colnames(a) <- c("nrounds", "tree_depth", "rmse")
-    df_rmse <- rbind(df_rmse, a)
-    
-  }
-  
-}
+# nrounds <- seq(200, 600, 100)
+# tree_depth <- seq(4,12,1)
+# 
+# df_rmse <- data.frame(nrounds = integer(), tree_depth = integer(), rmse = numeric())
+# 
+# 
+# rec_lgbm = recipe(cnt ~ ., data = df_train) %>%
+#   step_integer(all_nominal_predictors(), zero_based = TRUE) %>%
+#   step_integer(cnt, zero_based = TRUE) %>%
+#   prep()
+# 
+# X = bake(rec_lgbm, new_data = NULL, composition = "matrix",all_predictors())
+# 
+# lgbm_data =lgb.Dataset(data = X,colnames = colnames(X),label = bake(rec_lgbm,new_data = NULL, all_outcomes()) %>% pull())
+# 
+# cv_rmse <- list()
+# 
+# for (i in nrounds){
+#   #print(i)
+#   for (j in tree_depth){
+#     #print(j)
+#     lgbm_tuning = list(objective = "poisson",
+#                        nrounds = i,
+#                        min_gain_to_split = 1,
+#                        learning_rate = 0.1,
+#                        max_depth = j,
+#                        bagging_freq = 1,
+#                        bagging_fraction = 0.8,
+#                        bagging_seed = 123)
+#     
+#     lgbm = lgb.cv(data = lgbm_data, params = lgbm_tuning, nfold = 3, eval = 'rmse',verbose=-1)
+#     
+# 
+#     rmse_value <- lgbm$record_evals$valid$rmse$eval
+#     last_rmse_value <- tail(rmse_value, 1)
+# 
+#     a <-  data.frame(nrounds=i, tree_depth=j, rmse=last_rmse_value)
+#     colnames(a) <- c("nrounds", "tree_depth", "rmse")
+#     df_rmse <- rbind(df_rmse, a)
+#     
+#   }
+#   
+# }
 ```
 :::
 
 ```{r}
 df_rmse[which.min(df_rmse$rmse), ]
 
-# This indicates that 400 trees and a depth of 10 are the optimal parameters. 
+# This indicates that 400 trees and a depth of 12 are the optimal parameters. 
 
+```
+
+The parameters I tuned were tree depth and the total number of trees (num iteration). Other relevant parameters include the learning rate (default), bagging frequency (default), bagging fraction (not default), num_threads (not default).
+
+```{r}
+lgbm$params
 ```
 
 Method used for tuning was n fold cross validation.
@@ -255,7 +243,7 @@ X = bake(rec_lgbm, new_data = NULL, composition = "matrix",all_predictors())
 
 lgbm_data =lgb.Dataset(data = X,colnames = colnames(X),label = bake(rec_lgbm,new_data = NULL, all_outcomes()) %>% pull())
 
-lgbm_tuning = list(objective = "poisson",num_class = 1,nrounds = 400,min_gain_to_split = 1,learning_rate = 0.1,max_depth = 10,bagging_freq = 1,bagging_fraction = 0.8, bagging_seed = 123)
+lgbm_tuning = list(objective = "poisson",nrounds = 400,min_gain_to_split = 1,learning_rate = 0.1,max_depth = 10,bagging_freq = 1,bagging_fraction = 0.8, bagging_seed = 123)
 
 lgbm = lightgbm(data = lgbm_data, params = lgbm_tuning, verbose = -1)
 
@@ -268,7 +256,42 @@ rec_lgbm_test = recipe(cnt ~ ., data = df_test) %>%
   step_integer(cnt, zero_based = TRUE) %>%
   prep()
 
-Y = bake(rec_lgbm_test, new_data = NULL, composition = "matrix",all_predictors())
+Y <-  bake(rec_lgbm_test, new_data = NULL, composition = "matrix",all_predictors())
 
-predict(lgbm, Y)
+pred <- predict(lgbm, Y)
+```
+
+```{r}
+pred_df <- data.frame(pred, df_test$cnt)
+pred_df['log_loss'] <- (-1*pred_df$df_test.cnt)*log(pred_df$pred) + exp(log(pred_df$pred))
+```
+
+```{r}
+#write.csv(pred_df, "C:/Users/shrof/R/UVA/DS6030-rs7aq/hw8_pred.csv")
+```
+
+```{r}
+mean_log_loss <- mean(pred_df$log_loss)
+mean_log_loss
+```
+
+```{r}
+MAE <- mean(abs(pred_df$pred - pred_df$df_test.cnt))
+MAE
+```
+
+```{r}
+# 95% confidence intervals
+
+# MAE
+MAE_upper <- MAE + 1.96*(sd(pred_df$pred - pred_df$df_test.cnt)/10)
+MAE_upper
+MAE_lower <- MAE - 1.96*(sd(pred_df$pred - pred_df$df_test.cnt)/10)
+MAE_lower
+
+# Poisson Log Loss
+PLL_upper <- mean_log_loss + 1.96*(sd(pred_df$log_loss)/10)
+PLL_upper
+PLL_lower <- mean_log_loss - 1.96*(sd(pred_df$log_loss)/10)
+PLL_lower
 ```
