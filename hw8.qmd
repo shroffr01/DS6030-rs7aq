@@ -139,11 +139,13 @@ Gradient: -yi + e\^Fi
 
 Hessian: e\^Fi
 
-Wi = weight
+Wi = weights for each observation
 
-f(x) = model
+zi = ratio of gradient over hessian
 
-**REVISIT**
+Wi = e\^Fi / 2
+
+zi = -(yi + e\^Fi) /e\^Fi
 :::
 
 ## b. LightGBM Tuning
@@ -167,49 +169,49 @@ df_test <- df_test[, c('season', 'yr', 'mnth', 'hr', 'holiday', 'weekday', 'work
 ```
 
 ```{r}
-# nrounds <- seq(200, 600, 100)
-# tree_depth <- seq(4,12,1)
-# 
-# df_rmse <- data.frame(nrounds = integer(), tree_depth = integer(), rmse = numeric())
-# 
-# 
-# rec_lgbm = recipe(cnt ~ ., data = df_train) %>%
-#   step_integer(all_nominal_predictors(), zero_based = TRUE) %>%
-#   step_integer(cnt, zero_based = TRUE) %>%
-#   prep()
-# 
-# X = bake(rec_lgbm, new_data = NULL, composition = "matrix",all_predictors())
-# 
-# lgbm_data =lgb.Dataset(data = X,colnames = colnames(X),label = bake(rec_lgbm,new_data = NULL, all_outcomes()) %>% pull())
-# 
-# cv_rmse <- list()
-# 
-# for (i in nrounds){
-#   #print(i)
-#   for (j in tree_depth){
-#     #print(j)
-#     lgbm_tuning = list(objective = "poisson",
-#                        nrounds = i,
-#                        min_gain_to_split = 1,
-#                        learning_rate = 0.1,
-#                        max_depth = j,
-#                        bagging_freq = 1,
-#                        bagging_fraction = 0.8,
-#                        bagging_seed = 123)
-#     
-#     lgbm = lgb.cv(data = lgbm_data, params = lgbm_tuning, nfold = 3, eval = 'rmse',verbose=-1)
-#     
-# 
-#     rmse_value <- lgbm$record_evals$valid$rmse$eval
-#     last_rmse_value <- tail(rmse_value, 1)
-# 
-#     a <-  data.frame(nrounds=i, tree_depth=j, rmse=last_rmse_value)
-#     colnames(a) <- c("nrounds", "tree_depth", "rmse")
-#     df_rmse <- rbind(df_rmse, a)
-#     
-#   }
-#   
-# }
+nrounds <- seq(200, 600, 100)
+tree_depth <- seq(4,12,1)
+
+df_rmse <- data.frame(nrounds = integer(), tree_depth = integer(), rmse = numeric())
+
+
+rec_lgbm = recipe(cnt ~ ., data = df_train) %>%
+  step_integer(all_nominal_predictors(), zero_based = TRUE) %>%
+  step_integer(cnt, zero_based = TRUE) %>%
+  prep()
+
+X = bake(rec_lgbm, new_data = NULL, composition = "matrix",all_predictors())
+
+lgbm_data =lgb.Dataset(data = X,colnames = colnames(X),label = bake(rec_lgbm,new_data = NULL, all_outcomes()) %>% pull())
+
+cv_rmse <- list()
+
+for (i in nrounds){
+  #print(i)
+  for (j in tree_depth){
+    #print(j)
+    lgbm_tuning = list(objective = "poisson",
+                       nrounds = i,
+                       min_gain_to_split = 1,
+                       learning_rate = 0.1,
+                       max_depth = j,
+                       bagging_freq = 1,
+                       bagging_fraction = 0.8,
+                       bagging_seed = 123)
+
+    lgbm = lgb.cv(data = lgbm_data, params = lgbm_tuning, nfold = 3, eval = 'rmse',verbose=-1)
+
+
+    rmse_value <- lgbm$record_evals$valid$rmse$eval
+    last_rmse_value <- tail(rmse_value, 1)
+
+    a <-  data.frame(nrounds=i, tree_depth=j, rmse=last_rmse_value)
+    colnames(a) <- c("nrounds", "tree_depth", "rmse")
+    df_rmse <- rbind(df_rmse, a)
+
+  }
+
+}
 ```
 :::
 

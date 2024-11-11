@@ -4,6 +4,10 @@ author: "**Rohan Shroff**"
 format: ds6030hw-html
 ---
 
+```{r}
+3+2
+```
+
 ```{r config}
 #| include: false
 # Set global configurations and settings here
@@ -25,13 +29,12 @@ library(tidyverse) # functions for data manipulation
 
 Create a set of functions to generate data from the following distributions:
 
-```{=tex}
 \begin{align*}
 X &\sim \mathcal{N}(0, 1) \\
 Y &= -1 + .5X + .2X^2 + \epsilon \\
 \epsilon &\sim \mathcal{N}(0,\, \sigma)
 \end{align*}
-```
+
 ::: {.callout-note title="Solution"}
 ```{r}
 # generates random x values

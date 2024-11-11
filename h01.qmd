@@ -23,6 +23,10 @@ data_dir = 'https://mdporter.github.io/teaching/data/' # data directory
 library(tidyverse) # functions for data manipulation
 ```
 
+```{r}
+3+2
+```
+
 # Getting Help
 
 The purpose of this (ungraded) homework is to help get you prepared for the semester. Don't panic if you don't immediately know the answers to some of these. I expect everyone will need to look things up. Take note of the areas that are rusty and plan to spend a bit of extra time to get up to speed. If some of these items are not even remotely familiar to you, then you probably have not satisfied the pre-requisite material; review the course syllabus and speak to me about any questions.

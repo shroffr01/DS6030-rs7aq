@@ -19,6 +19,10 @@ library(ranger)
 library(pROC)
 ```
 
+```{r}
+print('hi')
+```
+
 # COMPAS Recidivism Prediction
 
 A recidivism risk model called COMPAS was the topic of a [ProPublica article](https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing/) on ML bias. Because the data and notebooks used for article was released on [github](https://github.com/propublica/compas-analysis), we can also evaluate the prediction bias (i.e., calibration).
