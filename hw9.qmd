@@ -41,10 +41,6 @@ df_test <- df_test[c("Class","Sex","Age", "Fare", "sibsp", "parch", "Joined", "S
 df_train <- na.omit(df_train)
 df_test <- na.omit(df_test)
 ```
-
-```{r}
-df_train
-```
 :::
 
 ## b. Method 1: Built-in importance scores
@@ -84,10 +80,6 @@ for (i in mtry_vals) {
 ```
 
 ```{r}
-results_df
-```
-
-```{r}
 results_df[which.min(results_df$MSE), ]
 # The best paramaters are bucket size of 2 and mtry of 2. 
 ```
@@ -119,7 +111,17 @@ Report the performance of the model fit from (a.) on the test data. Use the log-
 $$
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+test_pred <- predict(rf_model, data = df_test)
+```
+
+```{r}
+log_loss_df <- data.frame(df_test$Survived, test_pred$pred)
+log_loss_df['eq'] <- (log_loss_df$df_test.Survived * log(log_loss_df$test_pred.pred)) + ((1-log_loss_df$df_test.Survived)*log(1-log_loss_df$test_pred.pred))
+
+log_loss_c <- (-1/nrow(df_test) )* sum(log_loss_df$eq)
+log_loss_c
+```
 :::
 
 ## d. Method 2: Permute *after* fitting
@@ -127,7 +129,45 @@ Add solution here
 Use the fitted model from question (a.) to perform permutation feature importance. Shuffle/permute each variable individually on the *test set* before making predictions. Record the loss. Repeat $M=10$ times and produce a boxplot of the change in loss (change from reported loss from part b.).
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+avg_loss <- list() 
+
+for (i in 1:7){
+  
+  loss_change_list = vector()
+  
+  for (m in 1:10) {
+    
+    df_test_mod <- df_test
+    df_test_mod[[i]] <- sample(df_test[[i]])
+    
+    pred <- predict(rf_model, data = df_test_mod)
+    
+    # calculate loss
+    
+    log_loss_df <- data.frame(df_test_mod$Survived, pred$pred)
+  log_loss_df['eq'] <- (log_loss_df$df_test_mod.Survived * log(log_loss_df$pred.pred)) + ((1-log_loss_df$df_test_mod.Survived)*log(1-log_loss_df$pred.pred))
+  
+    log_loss <- ((-1/nrow(df_test_mod) )* sum(log_loss_df$eq)) - log_loss_c
+    
+    loss_change_list[[m]] <- log_loss 
+  
+  }  
+  
+  avg_loss[[i]] <- (loss_change_list)
+  
+}
+```
+
+```{r}
+avg_loss_df <- data.frame(avg_loss)
+
+boxplot(avg_loss_df, 
+        main = "Permutation Feature Importance - Loss Distribution",
+        xlab = "Features",
+        ylab = "Log Loss",
+        col = rainbow(ncol(avg_loss_df)))
+```
 :::
 
 ## e. Method 3: Permute *before* fitting
@@ -135,7 +175,47 @@ Add solution here
 For this approach, shuffle/permute the *training data* and re-fit the ensemble model. Evaluate the predictions on the (unaltered) test data. Repeat $M=10$ times (for each predictor variable) and produce a boxplot of the change in loss.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+
+avg_loss <- list() 
+
+for (i in 1:7){
+  
+  loss_change_list = vector()
+  
+  for (m in 1:10) {
+    
+    df_train_mod <- df_train
+    df_train_mod[[i]] <- sample(df_train[[i]])
+    
+    rf_model <- ranger(Survived~.,num.trees=500, mtry=2, min.bucket=2,importance = "impurity", data=df_train_mod)
+    
+    pred <- predict(rf_model, data = df_test_mod)
+    
+    # calculate loss
+    
+    log_loss_df <- data.frame(df_test_mod$Survived, pred$pred)
+  log_loss_df['eq'] <- (log_loss_df$df_test_mod.Survived * log(log_loss_df$pred.pred)) + ((1-log_loss_df$df_test_mod.Survived)*log(1-log_loss_df$pred.pred))
+  
+    log_loss <- ((-1/nrow(df_test_mod) )* sum(log_loss_df$eq)) - log_loss_c
+    
+    loss_change_list[[m]] <- log_loss 
+  
+  }  
+  
+  avg_loss[[i]] <- (loss_change_list)
+  
+}
+```
+
+```{r}
+avg_loss_df <- data.frame(avg_loss)
+boxplot(avg_loss_df, 
+        main = "Permutation Feature Importance - Loss Distribution",
+        xlab = "Features",
+        ylab = "Log Loss",
+        col = rainbow(ncol(avg_loss_df)))
+```
 :::
 
 ## f. Understanding
@@ -143,7 +223,11 @@ Add solution here
 Describe the benefits of each of the three approaches to measure feature importance.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+Approach 1: Not computationally expensive
+
+Approach 2: Allows us to see direct impact of test data, not as computationally expensive
+
+Approach 3: Prevents overfit and provides more data
 :::
 
 # Problem 2: Effects of correlated predictors
@@ -154,9 +238,19 @@ This problem will illustrate what happens to the importance scores when there ar
 
 Create a new feature `Sex2` that is 95% the same as `Sex`. Do this by selecting 5% of training ($n=50$) and testing ($n=15$) data and flip the `Sex` value.
 
-::: {.callout-note title="Solution"}
-Add solution here
-:::
+```{r}
+rand_numbers_train <- round(runif(n=50, min=1, max=1003), 0)
+rand_numbers_test <- round(runif(n=15, min=1, max=297), 0)
+
+df_train['Sex2'] <- df_train['Sex']
+df_test['Sex2'] <- df_test['Sex']
+
+
+```
+
+```{r}
+
+```
 
 ## b. Method 1: Built-in importance
 
