@@ -41,6 +41,10 @@ df_test <- df_test[c("Class","Sex","Age", "Fare", "sibsp", "parch", "Joined", "S
 df_train <- na.omit(df_train)
 df_test <- na.omit(df_test)
 ```
+
+```{r}
+df_train
+```
 :::
 
 ## b. Method 1: Built-in importance scores
@@ -161,12 +165,14 @@ for (i in 1:7){
 
 ```{r}
 avg_loss_df <- data.frame(avg_loss)
+colnames(avg_loss_df) <- c('Class','Sex','Age','Fare','sibsp', 'parch', 'Joined')
 
 boxplot(avg_loss_df, 
         main = "Permutation Feature Importance - Loss Distribution",
         xlab = "Features",
         ylab = "Log Loss",
         col = rainbow(ncol(avg_loss_df)))
+
 ```
 :::
 
@@ -210,6 +216,7 @@ for (i in 1:7){
 
 ```{r}
 avg_loss_df <- data.frame(avg_loss)
+colnames(avg_loss_df) <- c('Class','Sex','Age','Fare','sibsp', 'parch', 'Joined')
 boxplot(avg_loss_df, 
         main = "Permutation Feature Importance - Loss Distribution",
         xlab = "Features",
@@ -239,17 +246,15 @@ This problem will illustrate what happens to the importance scores when there ar
 Create a new feature `Sex2` that is 95% the same as `Sex`. Do this by selecting 5% of training ($n=50$) and testing ($n=15$) data and flip the `Sex` value.
 
 ```{r}
-rand_numbers_train <- round(runif(n=50, min=1, max=1003), 0)
-rand_numbers_test <- round(runif(n=15, min=1, max=297), 0)
+rand_numbers_train <- round(runif(n=50, min=1, max=1002), 0)
+rand_numbers_test <- round(runif(n=15, min=1, max=296), 0)
 
 df_train['Sex2'] <- df_train['Sex']
 df_test['Sex2'] <- df_test['Sex']
 
 
-```
-
-```{r}
-
+df_train$Sex2[rand_numbers_train] <- ifelse(df_train$Sex2[rand_numbers_train] == 'male','female','male')
+df_test$Sex2[rand_numbers_test] <- ifelse(df_test$Sex2[rand_numbers_test] == 'male','female','male')
 ```
 
 ## b. Method 1: Built-in importance
@@ -257,7 +262,15 @@ df_test['Sex2'] <- df_test['Sex']
 Fit the same model as in Problem 1b, but use the new data that includes `Sex2` (i.e., use both `Sex` and `Sex2` in the model). Calculate the built-in feature importance score and produce a barplot.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+rf_model <- ranger(Survived~.,num.trees=500, mtry=2, min.bucket=2,importance = "impurity", data=df_train)
+
+import_df <- data.frame(Feature=names(rf_model$variable.importance), Importance = rf_model$variable.importance)
+
+ggplot(data = import_df, aes(x=Feature, y = Importance)) +
+  geom_col(fill='blue') +
+  labs(title = 'RF Model', x = 'Feature', y = 'Importance')
+```
 :::
 
 ## c. Method 2: Permute *after* fitting
@@ -265,7 +278,51 @@ Add solution here
 Redo Method 2 (problem 1d) on the new data/model and produce a boxplot of importance scores. The importance score is defined as the difference in loss.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+df_train <- df_train[,c(1,2,3,4,5,6,7,9,8)]
+df_test <- df_test[,c(1,2,3,4,5,6,7,9,8)]
+
+avg_loss <- list() 
+
+for (i in 1:8){
+  
+  loss_change_list = vector()
+  
+  for (m in 1:10) {
+    
+    df_test_mod <- df_test
+    df_test_mod[[i]] <- sample(df_test[[i]])
+    
+    pred <- predict(rf_model, data = df_test_mod)
+    
+    # calculate loss
+    
+    log_loss_df <- data.frame(df_test_mod$Survived, pred$pred)
+  log_loss_df['eq'] <- (log_loss_df$df_test_mod.Survived * log(log_loss_df$pred.pred)) + ((1-log_loss_df$df_test_mod.Survived)*log(1-log_loss_df$pred.pred))
+  
+    log_loss <- ((-1/nrow(df_test_mod) )* sum(log_loss_df$eq)) - log_loss_c
+    
+    loss_change_list[[m]] <- log_loss 
+  
+  }  
+  
+  avg_loss[[i]] <- (loss_change_list)
+  
+}
+
+```
+
+```{r}
+avg_loss_df <- data.frame(avg_loss)
+colnames(avg_loss_df) <- c('Class','Sex','Age','Fare','sibsp', 'parch', 'Joined', 'Sex2')
+
+boxplot(avg_loss_df, 
+        main = "Permutation Feature Importance - Loss Distribution",
+        xlab = "Features",
+        ylab = "Log Loss",
+        col = rainbow(ncol(avg_loss_df)))
+
+```
 :::
 
 ## d. Method 3: Permute *before* fitting
@@ -273,7 +330,49 @@ Add solution here
 Redo Method 3 (problem 1e) on the new data and produce a boxplot of importance scores. The importance score is defined as the difference in loss.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+
+avg_loss <- list() 
+
+for (i in 1:8){
+  
+  loss_change_list = vector()
+  
+  for (m in 1:10) {
+    
+    df_train_mod <- df_train
+    df_train_mod[[i]] <- sample(df_train[[i]])
+    
+    rf_model <- ranger(Survived~.,num.trees=500, mtry=2, min.bucket=2,importance = "impurity", data=df_train_mod)
+    
+    pred <- predict(rf_model, data = df_test_mod)
+    
+    # calculate loss
+    
+    log_loss_df <- data.frame(df_test_mod$Survived, pred$pred)
+  log_loss_df['eq'] <- (log_loss_df$df_test_mod.Survived * log(log_loss_df$pred.pred)) + ((1-log_loss_df$df_test_mod.Survived)*log(1-log_loss_df$pred.pred))
+  
+    log_loss <- ((-1/nrow(df_test_mod) )* sum(log_loss_df$eq)) - log_loss_c
+    
+    loss_change_list[[m]] <- log_loss 
+  
+  }  
+  
+  avg_loss[[i]] <- (loss_change_list)
+  
+}
+```
+
+```{r}
+avg_loss_df <- data.frame(avg_loss)
+colnames(avg_loss_df) <- c('Class','Sex','Age','Fare','sibsp', 'parch', 'Joined', 'Sex2')
+
+boxplot(avg_loss_df, 
+        main = "Permutation Feature Importance - Loss Distribution",
+        xlab = "Features",
+        ylab = "Log Loss",
+        col = rainbow(ncol(avg_loss_df)))
+```
 :::
 
 ## e. Understanding
