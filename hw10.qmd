@@ -126,7 +126,16 @@ Interstate 64 (I-64) is a major east-west road that passes just south of Charlot
 Extract the crashes and make a scatter plot with mile marker on x-axis and time on y-axis.
 
 ::: {.callout-note title="Solution"}
-Add solution here.
+```{r}
+df_64 <- read.csv('crashes16.csv')
+df_64
+```
+
+```{r}
+ggplot(df_64, aes(x=mile, y = time)) + 
+  geom_point(color='orange') + 
+  labs(title = 'Scatter Plot of Mile Marker vs Time')
+```
 :::
 
 ## b. Use KDE to estimate the *mile marker* density.
@@ -135,7 +144,17 @@ Add solution here.
 -   Plot the density estimate.
 
 ::: {.callout-note title="Solution"}
-Add solution here.
+```{r}
+data_mm <- df_64$mile
+bandwidth = hpi(data_mm) 
+
+mm_kde <- kde(data_mm, h = bandwidth)
+print(paste('Bandwidth', bandwidth))
+```
+
+```{r}
+plot(mm_kde, xlim=c(87,136))
+```
 :::
 
 ## c. Use KDE to estimate the temporal *time-of-week* density.
@@ -144,7 +163,17 @@ Add solution here.
 -   Plot the density estimate.
 
 ::: {.callout-note title="Solution"}
-Add solution here.
+```{r}
+data_tow <- df_64$time
+bandwidth = hpi(data_tow) 
+
+tow_kde <- kde(data_tow, h = bandwidth)
+print(paste('Bandwidth', bandwidth))
+```
+
+```{r}
+plot(tow_kde, xlim=c(0,7))
+```
 :::
 
 ## d. Use KDE to estimate the bivariate mile-time density.
@@ -153,7 +182,19 @@ Add solution here.
 -   Plot the bivariate density estimate.
 
 ::: {.callout-note title="Solution"}
-Add solution here.
+```{r}
+H2 = Hscv.diag(df_64)
+H2
+```
+
+```{r}
+f2 = kde(df_64, H=H2)
+
+plot(f2,cont = c(5, 10, 50, 95), # set contour levels
+las=1, xlim = c(87, 136), ylim=c(0, 7)) # set asthetics
+points(df_64, pch=19, cex=.5, col='grey60') # add points
+grid()
+```
 :::
 
 ## e. Crash Hotspot
@@ -161,5 +202,5 @@ Add solution here.
 Based on the estimated density, approximate the most dangerous place and time to drive on this stretch of road. Identify the mile marker and time-of-week pair (within a few miles and hours).
 
 ::: {.callout-note title="Solution"}
-Add solution here.
+Based on the estimated density, the most dangerous place and time to drive on this stretch of road is around mile marker 117 during Monday evening.
 :::
