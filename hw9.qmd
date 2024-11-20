@@ -41,10 +41,6 @@ df_test <- df_test[c("Class","Sex","Age", "Fare", "sibsp", "parch", "Joined", "S
 df_train <- na.omit(df_train)
 df_test <- na.omit(df_test)
 ```
-
-```{r}
-df_train
-```
 :::
 
 ## b. Method 1: Built-in importance scores
@@ -150,7 +146,7 @@ for (i in 1:7){
     # calculate loss
     
     log_loss_df <- data.frame(df_test_mod$Survived, pred$pred)
-  log_loss_df['eq'] <- (log_loss_df$df_test_mod.Survived * log(log_loss_df$pred.pred)) + ((1-log_loss_df$df_test_mod.Survived)*log(1-log_loss_df$pred.pred))
+    log_loss_df['eq'] <- (log_loss_df$df_test_mod.Survived * log(log_loss_df$pred.pred)) + ((1-log_loss_df$df_test_mod.Survived)*log(1-log_loss_df$pred.pred))
   
     log_loss <- ((-1/nrow(df_test_mod) )* sum(log_loss_df$eq)) - log_loss_c
     
@@ -168,8 +164,8 @@ avg_loss_df <- data.frame(avg_loss)
 colnames(avg_loss_df) <- c('Class','Sex','Age','Fare','sibsp', 'parch', 'Joined')
 
 boxplot(avg_loss_df, 
-        main = "Permutation Feature Importance - Loss Distribution",
-        xlab = "Features",
+        main = "Change in Log Loss by Feature",
+        xlab = "Feature",
         ylab = "Log Loss",
         col = rainbow(ncol(avg_loss_df)))
 
@@ -182,7 +178,6 @@ For this approach, shuffle/permute the *training data* and re-fit the ensemble m
 
 ::: {.callout-note title="Solution"}
 ```{r}
-
 avg_loss <- list() 
 
 for (i in 1:7){
@@ -201,7 +196,7 @@ for (i in 1:7){
     # calculate loss
     
     log_loss_df <- data.frame(df_test_mod$Survived, pred$pred)
-  log_loss_df['eq'] <- (log_loss_df$df_test_mod.Survived * log(log_loss_df$pred.pred)) + ((1-log_loss_df$df_test_mod.Survived)*log(1-log_loss_df$pred.pred))
+    log_loss_df['eq'] <- (log_loss_df$df_test_mod.Survived * log(log_loss_df$pred.pred)) + ((1-log_loss_df$df_test_mod.Survived)*log(1-log_loss_df$pred.pred))
   
     log_loss <- ((-1/nrow(df_test_mod) )* sum(log_loss_df$eq)) - log_loss_c
     
@@ -218,8 +213,8 @@ for (i in 1:7){
 avg_loss_df <- data.frame(avg_loss)
 colnames(avg_loss_df) <- c('Class','Sex','Age','Fare','sibsp', 'parch', 'Joined')
 boxplot(avg_loss_df, 
-        main = "Permutation Feature Importance - Loss Distribution",
-        xlab = "Features",
+        main = "Change in Log Loss by Feature",
+        xlab = "Feature",
         ylab = "Log Loss",
         col = rainbow(ncol(avg_loss_df)))
 ```
@@ -232,9 +227,9 @@ Describe the benefits of each of the three approaches to measure feature importa
 ::: {.callout-note title="Solution"}
 Approach 1: Not computationally expensive
 
-Approach 2: Allows us to see direct impact of test data, not as computationally expensive
+Approach 2: Allows us to see direct impact of test data, not as computationally expensive so more efficient
 
-Approach 3: Prevents overfit and provides more data
+Approach 3: Prevents data leakage and more data available
 :::
 
 # Problem 2: Effects of correlated predictors
@@ -317,8 +312,8 @@ avg_loss_df <- data.frame(avg_loss)
 colnames(avg_loss_df) <- c('Class','Sex','Age','Fare','sibsp', 'parch', 'Joined', 'Sex2')
 
 boxplot(avg_loss_df, 
-        main = "Permutation Feature Importance - Loss Distribution",
-        xlab = "Features",
+        main = "Change in Log Loss",
+        xlab = "Feature",
         ylab = "Log Loss",
         col = rainbow(ncol(avg_loss_df)))
 
@@ -368,8 +363,8 @@ avg_loss_df <- data.frame(avg_loss)
 colnames(avg_loss_df) <- c('Class','Sex','Age','Fare','sibsp', 'parch', 'Joined', 'Sex2')
 
 boxplot(avg_loss_df, 
-        main = "Permutation Feature Importance - Loss Distribution",
-        xlab = "Features",
+        main = "Change in Log Loss",
+        xlab = "Feature",
         ylab = "Log Loss",
         col = rainbow(ncol(avg_loss_df)))
 ```
@@ -380,5 +375,5 @@ boxplot(avg_loss_df,
 Describe how the addition of the almost duplicated predictor impacted the feature importance results.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+The addition of the almost duplicated variable doesn't impact the other feature importances much. However, the sex feature sees a substantial decrease in importance.
 :::
