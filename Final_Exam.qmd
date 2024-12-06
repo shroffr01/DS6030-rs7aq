@@ -28,6 +28,7 @@ data_dir = 'https://mdporter.github.io/teaching/data' # data directory
 library(tidyverse) # functions for data manipulation   
 library(mclust)    # model based clustering
 library(mixtools)  # for poisson mixture models
+library(GGally)
 ```
 
 # Problem 1: Customer Segmentation (15 pts)
@@ -90,6 +91,12 @@ geom_point(aes(color = ifelse(K == 4, "red", "black"))) +
 scale_color_identity() +
 coord_cartesian(xlim=c(1, 30))
 ```
+
+```{r}
+clusters[1] == clusters[12]
+
+# Points 1 and 12 do belong to the same cluster. 
+```
 :::
 
 Based on the Elbow method, the ideal number of clusters is 4.
@@ -101,8 +108,44 @@ Based on the Elbow method, the ideal number of clusters is 4.
 -   Using your segmentation, are customers 1 and 12 in the same cluster?
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+# utilize same scaled data to ensure consistency (mean = 0, variance = 1)
+
+X = df_RFM[, 2:4]
+
+Kmax = 10 
+SSE = numeric(Kmax) 
+
+for(k in 1:Kmax){
+km = kmeans(X, centers=k, nstart=25) 
+SSE[k] = km$tot.withinss
+}
+
+# Plot results
+tibble(K = 1:Kmax, SSE) %>%
+ggplot(aes(K, log(SSE))) +
+geom_line() +
+geom_point() +
+scale_x_continuous(breaks = 1:Kmax) +
+labs(title = "K-means for Old Faithful")
+```
 :::
+
+Based on the elbow method, 4 clusters seem to be optimal.
+
+```{r}
+fit <- kmeans(df_RFM[,2:4], centers = 4, nstart = 100)
+```
+
+```{r}
+ggpairs(X, aes(color = factor(fit$cluster)))
+```
+
+```{r}
+fit$cluster[1] == fit$cluster[12]
+
+# According to K means, points 1 and 12 are not in the same cluster. 
+```
 
 ## d. Implement model-based clustering (3 pts)
 
@@ -112,7 +155,17 @@ Add solution here
 -   Using your segmentation, are customers 1 and 100 in the same cluster?
 
 ::: {.callout-note title="Solution"}
-Add solution here
+```{r}
+# utilize same scaled data to ensure consistency (mean = 0, variance = 1)
+mix = Mclust(X, verbose=FALSE) 
+```
+
+```{r}
+plot(mix, what="BIC") # Note: maximize BIC = 2logL - m log n
+plot(mix, what="classification")
+plot(mix, what="uncertainty")
+plot(mix, what="density")
+```
 :::
 
 ## e. Discussion of results (3 pts)
