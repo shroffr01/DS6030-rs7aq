@@ -1,0 +1,254 @@
+---
+title: "Final Exam" 
+author: "**Rohan Shroff**"
+format: ds6030hw-html
+---
+
+::: {style="background-color:yellow; color:red; display: block; border-color: black; padding:1em; padding-bottom: .5em;"}
+This is an **independent assignment**. Do not discuss or work with classmates.
+:::
+
+```{r config, include=FALSE}
+# Set global configurations and settings here
+knitr::opts_chunk$set()                 # set global chunk options
+ggplot2::theme_set(ggplot2::theme_bw()) # set ggplot2 theme
+```
+
+# Grading Notes
+
+-   The exam is graded out of 100 pts.
+-   20 points are given for overall style and ease of reading. If you don't use the homework format or print out pages of unnecessary output the style points will be reduced.
+-   The point totals for each question are provided below.
+-   Be sure to show your work so you can get partial credit even if your solution is wrong.
+
+# Required R packages and Directories {.unnumbered .unlisted}
+
+```{r packages, message=FALSE, warning=FALSE}
+data_dir = 'https://mdporter.github.io/teaching/data' # data directory
+library(tidyverse) # functions for data manipulation   
+library(mclust)    # model based clustering
+library(mixtools)  # for poisson mixture models
+```
+
+# Problem 1: Customer Segmentation (15 pts)
+
+RFM analysis is an approach that some businesses use to understand their customers' activities. At any point in time, a company can measure how recently a customer purchased a product (Recency), how many times they purchased a product (Frequency), and how much they have spent (Monetary Value). There are many ad-hoc attempts to segment/cluster customers based on the RFM scores (e.g., here is one based on using the customers' rank of each dimension independently: <https://joaocorreia.io/blog/rfm-analysis-increase-sales-by-segmenting-your-customers.html>). In this problem you will use the clustering methods we covered in class to segment the customers.
+
+The data for this problem can be found here: \<`r file.path(data_dir, "RFM.csv")`\>. Cluster based on the `Recency`, `Frequency`, and `Monetary` features.
+
+## a. Load the data (3 pts)
+
+::: {.callout-note title="Solution"}
+```{r}
+url_link <-  'https://mdporter.github.io/teaching/data/RFM.csv'
+
+df_RFM <- read.csv('RFM.csv')
+```
+:::
+
+## b. Implement hierarchical clustering. (3 pts)
+
+-   Describe any pre-processing steps you took (e.g., scaling, distance metric)
+-   State the linkage method you used with justification.
+-   Show the resulting dendrogram.
+-   State the number of segments/clusters you used with justification.
+-   Using your segmentation, are customers 1 and 12 in the same cluster?
+
+::: {.callout-note title="Solution"}
+```{r}
+# scale data to prepare for clustering, (mean = 0, variance = 1)
+df_RFM[,-c(1)] <- scale(df_RFM[, -c(1)], center = TRUE, scale = TRUE)
+df_RFM <- data.frame(df_RFM)
+```
+
+In this particular analysis, average distance is the best linkage method to use because of the large number of data points and because average distance better handles outliers.
+
+```{r}
+dX <- dist(df_RFM[, 2:4], method = 'euclidean')
+hc <- hclust(dX, method = "ward.D")
+str(hc, 1)
+```
+
+```{r}
+colPalette = c('#1b9e77','#d95f02','#7570b3','#e7298a')
+clusters = cutree(hc, k=4)
+plot(as.dendrogram(hc), las=1, leaflab="none", ylab="height")
+ord = hc$order
+labels = clusters[ord]
+colors = colPalette[labels]
+shapes = 15 #ifelse(str_detect(labels, "F"), 15, 17)
+n = length(labels)
+points(1:n, rep(0, n), col=colors, pch=shapes, cex=.8)
+abline(h = 1500, lty=3, col="grey40")
+```
+
+```{r}
+tibble(height = hc$height, K = row_number(-height)) %>%
+ggplot(aes(K, height)) +
+geom_line() +
+geom_point(aes(color = ifelse(K == 4, "red", "black"))) +
+scale_color_identity() +
+coord_cartesian(xlim=c(1, 30))
+```
+:::
+
+Based on the Elbow method, the ideal number of clusters is 4.
+
+## c. Implement k-means. (3 pts)
+
+-   Describe any pre-processing steps you took (e.g., scaling)
+-   State the number of segments/clusters you used with justification.
+-   Using your segmentation, are customers 1 and 12 in the same cluster?
+
+::: {.callout-note title="Solution"}
+Add solution here
+:::
+
+## d. Implement model-based clustering (3 pts)
+
+-   Describe any pre-processing steps you took (e.g., scaling)
+-   State the number of segments/clusters you used with justification.
+-   Describe the best model. What restrictions are on the shape of the components?
+-   Using your segmentation, are customers 1 and 100 in the same cluster?
+
+::: {.callout-note title="Solution"}
+Add solution here
+:::
+
+## e. Discussion of results (3 pts)
+
+Discuss how you would cluster the customers if you had to do this for your job. Do you think one model would do better than the others?
+
+::: {.callout-note title="Solution"}
+Add solution here
+:::
+
+# Problem 2: Unbalanced Data (15 pts)
+
+A researcher is trying to build a predictive model for distinguishing between real and AI generated images. She collected a random sample ($n=10,000$) of tweets/posts that included images. Expert analysts were hired to label the images as real or AI generated. They determined that 1000 were AI generated and 9000 were real.
+
+She tasked her grad student with building a logistic regression model to predict the probability that a new image is AI generated. After reading on the internet, the grad student became concerned that the data was *unbalanced* and fit the model using a weighted log-loss $$
+-\sum_{i=1}^n w_i \left[ y_i \log \hat{p}(x_i) + (1-y_i) \log (1-\hat{p}(x_i)) \right]
+$$ where $y_i = 1$ if AI generated ($y_i=0$ if real) and $w_i = 1$ if $y_i = 1$ (AI) and $w_i = 1/9$ if $y_i = 0$ (real). This makes $\sum_i w_iy_i = \sum_i w_i(1-y_i) = 1000$. That is the total weight of the AI images equals the total weight of the real images. Note: An similar alternative is to downsample the real images; that is, build a model with 1000 AI and a random sample of 1000 real images. The grad student fits the model using the weights and is able to make predictions $\hat{p}(x)$.
+
+While the grad student is busy implementing this model, the researcher grabbed another 1000 random tweets/posts with images and had the experts again label them real or AI. Excitedly, the grad student makes predictions on the test data. However, the model doesn't seem to be working well on these new test images. While the AUC appears good, the log-loss and brier scores are really bad.
+
+Hint: By using the weights (or undersampling), the grad student is modifying the base rate (prior class probability).
+
+## a. What is going on? (5 pts)
+
+How can the AUC be strong while the log-loss and brier scores aren't.
+
+::: {.callout-note title="Solution"}
+Add solution here
+:::
+
+## b. What is the remedy? (5 pts)
+
+Specifically, how should the grad student adjust the predictions for the new test images? Use equations and show your work. Hints: the model is outputting $\hat{p}(x) = \widehat{\Pr}(Y=1|X=x)$; consider the log odds and Bayes theorem.
+
+::: {.callout-note title="Solution"}
+Add solution here
+:::
+
+## c. Base rate correction (5 pts)
+
+If the grad student's weighted model predicts an image is AI generated with $\hat{p}(x) = .80$, what is the updated prediction under the assumption that the true proportion of AI is 1/10.
+
+::: {.callout-note title="Solution"}
+Add solution here
+:::
+
+# Problem 3: Multiclass Classification (10 pts)
+
+You have built a predictive model that outputs a probability vector $\hat{p}(x) = [\hat{p}_1(x), \hat{p}_2(x), \hat{p}_3(x)]$ for a 3-class categorical output. Consider the following loss matrix which includes an option to return *No Decision* if there is too much uncertainty in the label:
+
+|         | $\hat{G} =1$ | $\hat{G} =2$ | $\hat{G} =3$ | No Decision |
+|:--------|-------------:|-------------:|-------------:|------------:|
+| $G = 1$ |            0 |            2 |            2 |           1 |
+| $G = 2$ |            1 |            0 |            2 |           1 |
+| $G = 3$ |            1 |            1 |            0 |           1 |
+
+What label would you output if the estimated probability is: $\hat{p}(x) = [0.25, 0.15, 0.60]$. Show your work.
+
+::: {.callout-note title="Solution"}
+Add solution here
+:::
+
+# Problem 4: Donor Acceptance Modeling (40 pts)
+
+::: {style="background-color:blue; color:yellow; display: block; border-color: black; padding:1em; padding-bottom: .5em;"}
+The data for this problem is for your private use on this exam only. You may not share or use for any other purposes.
+:::
+
+This challenge has you predicting the probability that a pediatric donor heart offer will be Accepted or Rejected. Use the `donor_accept_train.csv` data (available in Canvas) to build a model to predict the probability of `outcome = "Accept"`. The test data `donor_accept_test.csv` is used for making predictions.
+
+A description of the transplant system and variables is provided in `donor_accept_vars.html`.
+
+Hints:
+
+-   There are four parts to this problem. Before you being think about how your approach will address all four (for example, your choice of model(s) in part a may influence your approach to part c).
+
+-   As always, *before you start coding* write out each step of the process. Think about inputs and outputs.
+
+## a. Probability Prediction Contest (10 pts)
+
+Build a model to predict the probability that an offer will be accepted. Performance is evaluated using log-loss.
+
+*Contest Submission:*
+
+-   Submit your predictions on the `donor_accept_test.csv` data. Create a .csv file (ensure comma separated format) named `lastname_firstname.csv` that includes the column named "prob_accept" that is your estimated posterior probability. We will use automated evaluation, so the format must be exact.
+
+*Notes:*
+
+-   I suggest you quickly make an initial model without doing any feature engineering or much tuning. There are a lot of features, an endless number of feature engineering tasks, many predictive models each with many tuning parameters to choose from. But just get something that correctly outputs probabilities and use it to complete the other parts to this problem. You can always come back and improve the model if your time permits.
+
+-   You must show your code. Because your code may take some time to run, you may want to run the model outside this notebook. If you do so, copy the final code into this notebook and set `eval=FALSE` in the corresponding code chunk(s) so we can see the code, but it won't run when the notebook compiles.
+
+*Competition Grading:*
+
+-   2 of the 10 points are based on readable code
+-   3 of the 10 points are based on a valid submission (e.g., correct number of rows and log-loss beats an intercept only model)
+-   The remaining 5 points are based on your predictive performance. The top score will receive all 5, the second best 4.93, third best 4.85, etc.
+
+::: {.callout-note title="Solution"}
+Solution here
+:::
+
+## b: Hard Classification (10 pts)
+
+Suppose you are asked to make a hard classification using the probabilities from part a. Making a false negative is 4 times worse that making a false positive (i.e., $C_{FN} = 4*C_{FP}$).
+
+-   What threshold should be used with your predictions? How did you choose?
+
+::: {.callout-note title="Solution"}
+Solution here
+:::
+
+-   How many of the offers in the test set are classified as *Accept* using this threshold?
+
+::: {.callout-note title="Solution"}
+Solution here
+:::
+
+## c. Feature Importance (10 pts)
+
+What features are most important? Describe your results and approach in a language that a clinician would want to listen to and can understand. Be clear about the type of feature importance you used, the data (training, testing) that was used to calculate the feature importance scores, and the limitations inherent in your approach to feature importance.
+
+Notes:
+
+-   Your audience is a non-data scientist, so be sure to give a brief high level description of any terms they may not be familiar with.
+-   You wouldn't want to show the clinician the feature importance of all 100+ features. Indicate how to selected the *most* important features to report.
+-   You are not expected to know the clinical meaning of the features.
+
+::: {.callout-note title="Solution"}
+Solution here
+:::
+
+## d. Calibration (10 pts)
+
+Assess the calibration of your predictions. There are no points off for having a poorly calibrated model; the purpose of this problem is to demonstrate your knowledge of how to evaluate calibration.
+
+::: {.callout-note title="Solution"}
+Solution here
+:::

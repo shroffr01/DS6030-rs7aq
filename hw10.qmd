@@ -53,7 +53,7 @@ set equal to 0 and solve for theta
 :::
 
 $$
-\hat{\theta} = \frac{2}{n} \sum_{i=1}^{n} X_i^2
+\hat{\theta} = \frac{1}{2n} \sum_{i=1}^{n} X_i^2
 $$
 
 ## b. Estimate $\theta$ for the bat data using MLE?
@@ -66,7 +66,7 @@ n <- nrow(df)
 
 sum_x2 <- sum(df['Meters']**2)
 
-theta <- 2/n * sum_x2
+theta <- sum_x2 / (2*n)
 theta
 ```
 :::
@@ -112,7 +112,7 @@ plot(m_kde)
 ## e. Which model do you prefer, the parametric or KDE? Why?
 
 ::: {.callout-note title="Solution"}
-I prefer the KDE because it is much simpler and also because using a kernal helps allow for a flexible definition of the neighberhood of data and is better suited for non parametric distributions.
+I prefer the parametric model because the KDE has a lot of weird bumps and also has negative values which doesn't make much sense.
 :::
 
 # Problem 2: Interstate Crash Density
@@ -128,7 +128,6 @@ Extract the crashes and make a scatter plot with mile marker on x-axis and time 
 ::: {.callout-note title="Solution"}
 ```{r}
 df_64 <- read.csv('crashes16.csv')
-df_64
 ```
 
 ```{r}
@@ -202,5 +201,5 @@ grid()
 Based on the estimated density, approximate the most dangerous place and time to drive on this stretch of road. Identify the mile marker and time-of-week pair (within a few miles and hours).
 
 ::: {.callout-note title="Solution"}
-Based on the estimated density, the most dangerous place and time to drive on this stretch of road is around mile marker 117 during Monday evening.
+Based on the estimated density, the most dangerous place and time to drive on this stretch of road is around mile marker 117 during Monday evening and also around mile marker 102 during Friday afternoon and evening.
 :::
