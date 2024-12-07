@@ -160,11 +160,23 @@ fit$cluster[1] == fit$cluster[12]
 mix = Mclust(X, verbose=FALSE) 
 ```
 
+Clusters selected using BIC maximization method
+
 ```{r}
 plot(mix, what="BIC") # Note: maximize BIC = 2logL - m log n
 plot(mix, what="classification")
 plot(mix, what="uncertainty")
 plot(mix, what="density")
+```
+
+```{r}
+summary(mix)
+```
+
+```{r}
+# According to model based clustering, points 1 and 100 are not in the same cluster. 
+
+mix$classification[1] == mix$classification[100]
 ```
 :::
 
@@ -173,7 +185,7 @@ plot(mix, what="density")
 Discuss how you would cluster the customers if you had to do this for your job. Do you think one model would do better than the others?
 
 ::: {.callout-note title="Solution"}
-Add solution here
+If I had to do this for my job, I would cluster customers using similar methodologies as above. It's hard to say if one model would do better than others, I think the best way to assess this is to then look at the actual data and see which model best fits your goals or data analysis objectives.
 :::
 
 # Problem 2: Unbalanced Data (15 pts)
@@ -193,7 +205,7 @@ Hint: By using the weights (or undersampling), the grad student is modifying the
 How can the AUC be strong while the log-loss and brier scores aren't.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+The AUC metric is strong because this metric is based on a binary classification (1 or 0) and not a probability. This ensures that the overall performance of the model is still sound at the macro level. However, the log loss and brier scores are poor because the model is placing a disproportionate penalty on images that are AI compared to non AI images. Of the 1000 randomly selected images, most will be real. However, with the weighted log loss, the model is trained to put more emphasis on making sure that AI images are not misclassified, meaning that predicted probabilities for real images will be lower than what they should be and higher for AI images, thus bumping up the log loss and brier scores.
 :::
 
 ## b. What is the remedy? (5 pts)
@@ -201,7 +213,7 @@ Add solution here
 Specifically, how should the grad student adjust the predictions for the new test images? Use equations and show your work. Hints: the model is outputting $\hat{p}(x) = \widehat{\Pr}(Y=1|X=x)$; consider the log odds and Bayes theorem.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+![](images/clipboard-779061153.png)
 :::
 
 ## c. Base rate correction (5 pts)
@@ -209,7 +221,7 @@ Add solution here
 If the grad student's weighted model predicts an image is AI generated with $\hat{p}(x) = .80$, what is the updated prediction under the assumption that the true proportion of AI is 1/10.
 
 ::: {.callout-note title="Solution"}
-Add solution here
+![](images/clipboard-877405162.png)
 :::
 
 # Problem 3: Multiclass Classification (10 pts)
@@ -225,12 +237,11 @@ You have built a predictive model that outputs a probability vector $\hat{p}(x) 
 What label would you output if the estimated probability is: $\hat{p}(x) = [0.25, 0.15, 0.60]$. Show your work.
 
 ::: {.callout-note title="Solution"}
-Add solution here
 :::
 
 # Problem 4: Donor Acceptance Modeling (40 pts)
 
-::: {style="background-color:blue; color:yellow; display: block; border-color: black; padding:1em; padding-bottom: .5em;"}
+::: {style="background-color:blue; color:red; display: block; border-color: black; padding:1em; padding-bottom: .5em;"}
 The data for this problem is for your private use on this exam only. You may not share or use for any other purposes.
 :::
 
