@@ -32,6 +32,7 @@ library(GGally)
 library(ranger)
 library(dplyr)
 library(caret)
+library(probably)
 ```
 
 # Problem 1: Customer Segmentation (15 pts)
@@ -65,7 +66,7 @@ df_RFM[,-c(1)] <- scale(df_RFM[, -c(1)], center = TRUE, scale = TRUE)
 df_RFM <- data.frame(df_RFM)
 ```
 
-In this particular analysis, average distance is the best linkage method to use because of the large number of data points and because average distance better handles outliers.
+In this particular analysis, ward distance is the best linkage method to use because of the large number of data points and because ward distance better handles outliers.
 
 ```{r}
 dX <- dist(df_RFM[, 2:4], method = 'euclidean')
@@ -85,6 +86,8 @@ n = length(labels)
 points(1:n, rep(0, n), col=colors, pch=shapes, cex=.8)
 abline(h = 1500, lty=3, col="grey40")
 ```
+
+Based on the figure below, it becomes clear that four clusters is the optimal selection based on the elbow method.
 
 ```{r}
 tibble(height = hc$height, K = row_number(-height)) %>%
@@ -321,10 +324,6 @@ df_train <- df_train[ , !(names(df_train) %in% drops)]
 
 # Option 1: select only numeric columns
 df_train_int <- df_train %>% select(where(is.numeric))
-
-# hot encode all categorical columns
-#dmy <- dummyVars(" ~ .", data = df_train)
-#df_train <- data.frame(predict(dmy, newdata = df_train))
 ```
 
 ```{r}
@@ -346,7 +345,7 @@ df_test <- df_test %>%
 drops <- c("CVP_MAX", "AGE_DIFF", "days_at_2")
 df_test <- df_test[ , !(names(df_test) %in% drops)]
 
-# Option 1: select only numeric columns
+# select only numeric columns
 df_test_int <- df_test %>% select(where(is.numeric))
 ```
 
@@ -367,6 +366,10 @@ write.csv(csv_data, "C:/Users/shrof/R/UVA/DS6030-rs7aq/Shroff_Rohan.csv")
 ```
 :::
 
+::: {style="background-color:blue; color:red; display: block; border-color: black; padding:1em; padding-bottom: .5em;"}
+Note: My optimal model is created at the bottom of this assignment.
+:::
+
 ## b: Hard Classification (10 pts)
 
 Suppose you are asked to make a hard classification using the probabilities from part a. Making a false negative is 4 times worse that making a false positive (i.e., $C_{FN} = 4*C_{FP}$).
@@ -374,8 +377,7 @@ Suppose you are asked to make a hard classification using the probabilities from
 -   What threshold should be used with your predictions? How did you choose?
 
 ::: {.callout-note title="Solution"}
-```{p(x) = 1 / 1+4 = 1/5, model will classify as accept if probability is above 0.20}
-```
+`{p(x) = 1 / 1+4 = 1/5, model will classify as accept if probability is above 0.20}`
 :::
 
 -   How many of the offers in the test set are classified as *Accept* using this threshold?
@@ -409,40 +411,10 @@ import_df <- data.frame(Importance = rf_mod$variable.importance)
 import_df <- import_df %>%
   arrange(desc(Importance))
 
-import_df
+head(import_df, 10)
 ```
 
-```{r}
-avg_loss <- list() 
-
-for (i in 2:68){
-  
-  loss_change_list = vector()
-  
-  for (m in 1:10) {
-    
-    df_train_mod <- df_train_int
-    df_train_mod[[i]] <- sample(df_train_int[[i]])
-    
-    log_model <- ranger(outcome~.,family='binomial', data=df_train_mod, type='response')
-    
-    pred <- predict(log_model, newdata = df_test_mod)
-    
-    # calculate loss
-    
-    log_loss_df <- data.frame(df_test_mod$Survived, pred$pred)
-    log_loss_df['eq'] <- (log_loss_df$df_test_mod.Survived * log(log_loss_df$pred.pred)) + ((1-log_loss_df$df_test_mod.Survived)*log(1-log_loss_df$pred.pred))
-  
-    log_loss <- ((-1/nrow(df_test_mod) )* sum(log_loss_df$eq)) - log_loss_c
-    
-    loss_change_list[[m]] <- log_loss 
-  
-  }  
-  
-  avg_loss[[i]] <- (loss_change_list)
-  
-}
-```
+Using in built feature importance, we can see that the number of types a heart has been rejected, the hospital's acceptance rate the previous year, and the distance between the donor and the candidate are by far the most important predictor variables. Afterwards, there is a rather steady linear decrease in the importance of variables.
 :::
 
 ## d. Calibration (10 pts)
@@ -450,5 +422,163 @@ for (i in 2:68){
 Assess the calibration of your predictions. There are no points off for having a poorly calibrated model; the purpose of this problem is to demonstrate your knowledge of how to evaluate calibration.
 
 ::: {.callout-note title="Solution"}
-Solution here
+```{r}
+# to properly conduct calibration, the training data must be split to generate predictions on data that has not been fed into the model 
+df_train_int_train <- df_train_int[1:21000, ]
+df_train_int_test <- df_train_int[21001:29053, ]
+
+rf_mod_cal <- ranger(outcome~., num.trees=500, mtry=2, min.bucket=2,importance = "impurity", data=df_train_int_train)
+
+predictions_rf_cal <- predict(rf_mod_cal, data = df_train_int_test, type = 'response')
+predictions_rf_cal <- predictions_rf_cal$predictions
+```
+
+```{r}
+actual <- df_train_int_test$outcome
+
+df_cal <- data.frame(predictions_rf_cal, actual)
+
+df_cal
+```
+
+```{r}
+df_cal %>% 
+  cal_plot_breaks(actual, predictions_rf_cal, num_breaks = 8)
+```
+
+Overall, the model appears to be well calibrated. The reason for the dip when the model's predicted probability goes up is due to very small sample size. Most predicted probabilities are below 0.50.
 :::
+
+## e. Optimal Model
+
+**Data Preparation:**
+
+```{r}
+df <- read.csv('donor_accept_train.csv')
+
+# generate random numbers to select 70% of data for training and 30% for testing
+samp_list <- sample(1:nrow(df), 20300, replace=FALSE)
+
+# create training and testing sets
+df_train <- df[samp_list, ]
+df_test <- df[-samp_list, ]
+
+# recode outcome column to 1 and 0 (1 = accept, 0 = reject)
+df_train$outcome <- ifelse(df_train$outcome == 'Accept', 1, 0)
+df_test$outcome <- ifelse(df_test$outcome == 'Accept', 1, 0)
+
+# remove columns with large number of nans and unecessary columns
+df_train <- df_train[,-c(1,3,32,33,34,87)]
+df_test <- df_test[,-c(1,3,32,33,34,87)]
+
+# replace all Nans with missing label in categorical columns
+df_train <-  df_train %>%
+   mutate(across(where(is.character), ~ replace_na(., "missing")))
+
+df_test <-  df_test %>%
+   mutate(across(where(is.character), ~ replace_na(., "missing")))
+
+# replace all Nans with median of column in numeric columns
+df_train <- df_train %>%
+  mutate(across(where(is.numeric), ~ replace_na(., round(median(.,na.rm=TRUE)))))
+
+df_test <- df_test %>%
+  mutate(across(where(is.numeric), ~ replace_na(., round(median(.,na.rm=TRUE)))))
+
+# remove linearly dependent variables
+drops <- c("CVP_MAX", "AGE_DIFF", "days_at_2")
+df_train <- df_train[ , !(names(df_train) %in% drops)]
+df_test <- df_test[ , !(names(df_test) %in% drops)]
+
+# # Option 1: select only numeric columns
+# df_train_int <- df_train %>% select(where(is.numeric))
+# df_test_int <- df_test %>% select(where(is.numeric))
+
+# remove categorical columns with too many unique values
+drop1 <- c("LISTING_CTR_CODE", "OPO_CTR_CODE", "CAND_DIAG_full", "CAND_DIAG_primary")
+df_train <- df_train[ , !(names(df_train) %in% drop1)]
+df_test <- df_test[ , !(names(df_test) %in% drop1)]
+
+# Option 2: select all columns and hot encode all categorical columns
+dmy_train <- dummyVars(" ~ .", data = df_train)
+dmy_test <- dummyVars(" ~ .", data = df_test)
+
+df_train <- data.frame(predict(dmy_train, newdata = df_train))
+df_test <- data.frame(predict(dmy_test, newdata = df_test))
+```
+
+```{r}
+# df_cat <- df %>% select(where(is.character))
+# df_cat
+# unique_values <- sapply(df_cat, function(x) n_distinct(x))
+# print(unique_values)
+```
+
+**Random Forest Model:**
+
+```{r}
+## INT 
+
+rf_mod <- ranger(outcome~., num.trees=1000, mtry=20, max.depth = 20, importance = "impurity", data=df_train_int)
+
+predictions_rf <- predict(rf_mod, data = df_test_int, type = 'response')
+
+eval_df <- tibble(predictions_rf$predictions, df_test$outcome)
+colnames(eval_df) <- c("pred","outcome")
+
+eval_df['log_loss'] <- (eval_df$pred * log(eval_df$pred)) + ((1-eval_df$outcome)*log(1-eval_df$pred))
+
+log_loss_c <- (-1/nrow(eval_df) )* sum(eval_df$log_loss)
+log_loss_c
+
+```
+
+```{r}
+## ALL COLUMNS
+
+rf_mod <- ranger(outcome~., num.trees=1000, mtry=20, max.depth = 20, importance = "impurity", data=df_train)
+
+predictions_rf <- predict(rf_mod, data = df_test, type = 'response')
+
+eval_df <- tibble(predictions_rf$predictions, df_test$outcome)
+colnames(eval_df) <- c("pred","outcome")
+
+eval_df['log_loss'] <- (eval_df$pred * log(eval_df$pred)) + ((1-eval_df$outcome)*log(1-eval_df$pred))
+
+log_loss_c <- (-1/nrow(eval_df) )* sum(eval_df$log_loss)
+log_loss_c
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+**XGBOOST Model:**
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```

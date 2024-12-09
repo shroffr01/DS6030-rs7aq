@@ -113,6 +113,7 @@ $$
 ::: {.callout-note title="Solution"}
 ```{r}
 test_pred <- predict(rf_model, data = df_test)
+df_test
 ```
 
 ```{r}
